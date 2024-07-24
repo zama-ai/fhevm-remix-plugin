@@ -1,0 +1,15 @@
+.zama__result {
+  display: flex;
+  justify-content: flex-end;
+  margin: 8px 0;
+}
+
+.zama__result span {
+  font-weight: normal;
+  font-size: 12px;
+  display: inline-block;
+  max-width: 120px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}

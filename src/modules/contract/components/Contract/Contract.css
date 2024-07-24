@@ -27,6 +27,7 @@
   text-align: left;
   font-size: 10px;
   font-weight: bold;
+  min-height: 36px;
 }
 
 .zama_contractActionsContainerMultiInner {

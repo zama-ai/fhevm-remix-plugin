@@ -1,12 +1,13 @@
-import { BrowserProvider, ContractFactory } from 'ethers';
+import { BrowserProvider, ContractFactory, getAddress, isAddress } from 'ethers';
 import { useEffect, useState } from 'react';
-import { ABIDescription } from '@remixproject/plugin-api';
+import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
 import classNames from 'classnames';
 import { useRemix } from '../../../../remix';
 import { Button, TextInput } from '../../../common-ui';
 
 import './Contract.css';
 import { Inputs } from '../Inputs';
+import { ContractInterface } from '../ContractInterface';
 
 export type ContractProps = {
   provider: BrowserProvider;
@@ -14,14 +15,13 @@ export type ContractProps = {
 };
 
 export const Contract = ({ provider, account }: ContractProps) => {
-  const [deployVisible, setDeployVisible] = useState(false);
   const [name, setName] = useState<string>();
   const [abi, setAbi] = useState<ABIDescription[]>();
   const [bytecode, setBytecode] = useState<string>();
-  const [loading, setLoading] = useState(false);
+  const [constructor, setConstructor] = useState<FunctionDescription>();
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
-  const [contractAddress, setContractAddress] = useState<string>('');
+  const [contractAddresses, setContractAddresses] = useState<string[]>([]);
 
   const [constructorValues, setConstructorValues] = useState<string[]>([]);
 
@@ -39,8 +39,9 @@ export const Contract = ({ provider, account }: ContractProps) => {
           const contract = contracts[name];
           const currentAbi = contract.abi;
           if (currentAbi) {
-            console.log(currentAbi);
             setAbi(currentAbi);
+            const construct = currentAbi.find((desc) => desc.type === 'constructor') as FunctionDescription;
+            if (construct) setConstructor(construct);
           }
           const currentBytecode = contract.evm.bytecode.object;
           if (currentBytecode) {
@@ -57,14 +58,12 @@ export const Contract = ({ provider, account }: ContractProps) => {
   }, []);
 
   const onDeploy = async () => {
-    console.log('ok', abi, bytecode);
     if (!abi || !bytecode) return;
     const contractFactory = new ContractFactory(abi, bytecode, await provider.getSigner());
     const c = await contractFactory.deploy(...constructorValues);
     await c.waitForDeployment();
     const addr = await c.getAddress();
-    setContractAddress(addr);
-    setInputContractAddress(addr);
+    setContractAddresses([...contractAddresses, addr]);
   };
 
   if (!abi || !bytecode || !name) {
@@ -76,38 +75,26 @@ export const Contract = ({ provider, account }: ContractProps) => {
       <p>{name}</p>
 
       <div className="zama_contractActionsContainerMultiInner text-dark">
-        <div
-          className="zama_multiHeader"
-          onClick={() => {
-            setDeployVisible(!deployVisible);
-          }}
-        >
-          <div className="zama_multiTitle run-instance-multi-title">Deploy</div>
-          <i
-            className={classNames('fas zama_methCaret', {
-              'fa-angle-up': deployVisible,
-              'fa-angle-down': !deployVisible,
-            })}
-          ></i>
-        </div>
-        <div style={{ display: deployVisible ? 'block' : 'none' }}>
-          {abi[0].inputs && (
-            <Inputs values={constructorValues} setValues={setConstructorValues} inputs={abi[0].inputs} />
-          )}
-          <div className="d-flex zama_multiArg">
-            <div>
-              <Button variant="warning" onClick={onDeploy}>
-                Deploy
-              </Button>
-            </div>
-          </div>
-        </div>
+        {constructor && constructor.inputs && constructor.inputs.length > 0 && (
+          <Inputs
+            values={constructorValues}
+            setValues={setConstructorValues}
+            inputs={constructor.inputs}
+            variant="warning"
+            name="Deploy"
+            onClick={onDeploy}
+          />
+        )}
       </div>
       <div className="pt-2 d-flex flex-column zama_contractAddress">
         <div className="d-flex flex-row">
           <Button
             onClick={() => {
-              setContractAddress(inputContractAddress);
+              const checksumAddress = getAddress(inputContractAddress);
+              console.log(isAddress(checksumAddress));
+              if (isAddress(checksumAddress) && contractAddresses.every((c) => c !== checksumAddress)) {
+                setContractAddresses([...contractAddresses, checksumAddress]);
+              }
             }}
           >
             At address
@@ -123,7 +110,10 @@ export const Contract = ({ provider, account }: ContractProps) => {
         </div>
       </div>
 
-      <div></div>
+      {abi &&
+        contractAddresses.map((contractAddress) => (
+          <ContractInterface contractAddress={contractAddress} abi={abi} provider={provider} key={contractAddress} />
+        ))}
     </div>
   );
 };
