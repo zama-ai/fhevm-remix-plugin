@@ -11,9 +11,16 @@ export type ContractInterfaceProps = {
   account: string;
   abi: ABIDescription[];
   provider: BrowserProvider;
+  name: string;
 };
 
-export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAddress, abi, account, provider }) => {
+export const ContractInterface: React.FC<ContractInterfaceProps> = ({
+  contractAddress,
+  name,
+  abi,
+  account,
+  provider,
+}) => {
   const functionABI: FunctionDescription[] = (
     abi.filter((desc) => desc.type === 'function') as FunctionDescription[]
   ).sort((a, b) => {
@@ -28,11 +35,14 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAd
     <Accordion
       label={
         <>
-          {contractAddress.substring(0, 20)}...
+          <span>
+            {name} at {contractAddress}
+          </span>
           <IconCopy value={contractAddress} />
         </>
       }
       containerClassName="contractinterface"
+      left
     >
       {functionABI.map((desc, i) => {
         const onTransaction = async (values: Parameter[]) => {
@@ -44,7 +54,7 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAd
             const tx = await createTransaction(contract[name], ...encryptParameters(contractAddress, account, values));
             await tx.wait();
           } else {
-            const res = await contract[name](...values);
+            const res = await contract[name](...encryptParameters(contractAddress, account, values));
             return res;
           }
         };

@@ -1,3 +1,7 @@
 .zama_input {
   font-size: 10px !important;
 }
+
+.zama_input[disabled] {
+  opacity: 0.5;
+}

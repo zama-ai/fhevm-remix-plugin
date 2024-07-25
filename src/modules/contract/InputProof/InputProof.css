@@ -1,0 +1,15 @@
+.zama_inputproof {
+  position: absolute;
+  top: 7px;
+  right: 5px;
+  font-size: 10px;
+  border-radius: 3px;
+  background: var(--body-bg);
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.zama_inputproof__checked {
+  background: rgb(30, 125, 30);
+  color: #fff;
+}

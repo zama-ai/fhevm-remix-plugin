@@ -2,7 +2,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
   text-align: left;
   font-size: 10px;
   font-weight: bold;
@@ -19,24 +19,25 @@
   word-break: initial;
 }
 
-.zama_contractAddressInput {
+.zama_inputContainer {
+  position: relative;
   display: flex;
   justify-content: space-between;
   width: 66%;
   flex-grow: 0;
 }
 
-.zama_contractAddressInput input {
+.zama_inputContainer input {
   width: 100%;
 }
 
-.zama_contractAddressInput__small input {
+.zama_inputContainer__small input {
   width: auto;
   flex-grow: 1;
   max-width: calc(100% - 90px);
 }
 
-.zama_contractAddressInput__small select {
+.zama_inputContainer__small select {
   width: 85px;
   margin-left: 5px;
 }

@@ -120,10 +120,11 @@ export const Connect: React.FC<{
     return <p>No wallet has been found.</p>;
   }
 
-  const connectInfos = (
-    <div className="Connect__info">{!connected && <Button onClick={connect}>Connect your wallet</Button>}</div>
-  );
-
+  const connectInfos = !connected ? (
+    <div className="Connect__info">
+      <Button onClick={connect}>Connect your wallet</Button>
+    </div>
+  ) : null;
   return (
     <>
       {connectInfos}
