@@ -4,10 +4,12 @@ import { Accordion, Button, Label, Loader, Result, TextInput } from '../../../co
 import { ReactNode, useState } from 'react';
 
 import './Inputs.css';
+import { SelectEncrypted } from '../SelectEncrypted';
+import classNames from 'classnames';
 
 export type InputsProps = {
-  values: string[];
-  setValues: (values: string[]) => void;
+  values: { value: string; flag: string }[];
+  setValues: (values: { value: string; flag: string }[]) => void;
   inputs: (ABIParameter & { indexed: boolean }[]) | ABIParameter[];
   onClick: () => Promise<void | string>;
   name: string;
@@ -39,6 +41,7 @@ export const Inputs: React.FC<InputsProps> = ({
       if (res) setResult(res.toString());
       setLoading(false);
     } catch (e) {
+      console.log(e);
       setLoading(false);
     }
   };
@@ -51,6 +54,9 @@ export const Inputs: React.FC<InputsProps> = ({
       </Button>
     );
   }
+
+  if (values.length < inputs.length) return null;
+
   return (
     <>
       <Accordion label={headerLabel} labelOpen={name}>
@@ -58,19 +64,36 @@ export const Inputs: React.FC<InputsProps> = ({
           inputs.length > 0 &&
           inputs.map((v, i) => {
             if (isIndexed(v)) return;
+            const canEncrypt = v.type === 'bytes32';
             return (
               <div className="zama_multiArg" key={`${v.name}-${i}`}>
                 <Label label={`${v.name}`} />
-                <TextInput
-                  className="zama_contractAddressInput"
-                  placeholder={v.type}
-                  value={values[i] || ''}
-                  onChange={(e) => {
-                    const cValues = [...values];
-                    cValues[i] = e.target.value;
-                    setValues(cValues);
-                  }}
-                />
+                <div
+                  className={classNames({
+                    zama_contractAddressInput: true,
+                    zama_contractAddressInput__small: canEncrypt,
+                  })}
+                >
+                  <TextInput
+                    placeholder={v.type}
+                    value={values[i].value || ''}
+                    onChange={(e) => {
+                      const cValues = [...values];
+                      cValues[i].value = e.target.value;
+                      setValues(cValues);
+                    }}
+                  />
+                  {canEncrypt && (
+                    <SelectEncrypted
+                      onChange={(flag) => {
+                        const cValues = [...values];
+                        cValues[i].flag = flag;
+                        setValues(cValues);
+                      }}
+                      selected={values[i].flag}
+                    />
+                  )}
+                </div>
               </div>
             );
           })}

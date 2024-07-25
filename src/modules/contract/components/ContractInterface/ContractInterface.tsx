@@ -1,18 +1,19 @@
 import { FunctionDescription, ABIDescription } from '@remixproject/plugin-api';
 import { ContractFunction } from '../ContractFunction';
 import { Contract, BrowserProvider, FunctionFragment } from 'ethers';
-import { createTransaction } from '../../../utils';
+import { createTransaction, encryptParameters, Parameter } from '../../../utils';
 import { Accordion, IconCopy } from '../../../common-ui';
 
 import './ContractInterface.css';
 
 export type ContractInterfaceProps = {
   contractAddress: string;
+  account: string;
   abi: ABIDescription[];
   provider: BrowserProvider;
 };
 
-export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAddress, abi, provider }) => {
+export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAddress, abi, account, provider }) => {
   const functionABI: FunctionDescription[] = (
     abi.filter((desc) => desc.type === 'function') as FunctionDescription[]
   ).sort((a, b) => {
@@ -34,14 +35,13 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAd
       containerClassName="contractinterface"
     >
       {functionABI.map((desc, i) => {
-        const onTransaction = async (values: any[]) => {
+        const onTransaction = async (values: Parameter[]) => {
           if (!desc.name) return;
           const contract = new Contract(contractAddress, abi, await provider.getSigner());
           const fragment = FunctionFragment.from(desc);
           const name = fragment.format();
-          console.log(...values);
           if (desc.stateMutability !== 'view') {
-            const tx = await createTransaction(contract[name], ...values);
+            const tx = await createTransaction(contract[name], ...encryptParameters(contractAddress, account, values));
             await tx.wait();
           } else {
             const res = await contract[name](...values);

@@ -1,0 +1,6 @@
+.zama_select {
+  color: currentColor;
+  background: var(--bgPrimary);
+  border: 1px solid var(--accentColor);
+  font-size: 12px;
+}

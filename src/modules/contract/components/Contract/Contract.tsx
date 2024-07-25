@@ -8,6 +8,7 @@ import { Button, TextInput } from '../../../common-ui';
 import './Contract.css';
 import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
+import { encryptParameters, Parameter } from '../../../utils';
 
 export type ContractProps = {
   provider: BrowserProvider;
@@ -20,12 +21,20 @@ export const Contract = ({ provider, account }: ContractProps) => {
   const [bytecode, setBytecode] = useState<string>();
   const [constructor, setConstructor] = useState<FunctionDescription>();
 
-  const [inputContractAddress, setInputContractAddress] = useState<string>('');
+  const [inputContractAddress, setInputContractAddress] = useState<string>(
+    '0x89fa7AD8b036af9eFB061f1ea945Da119eC4508F'
+  );
   const [contractAddresses, setContractAddresses] = useState<string[]>([]);
 
-  const [constructorValues, setConstructorValues] = useState<string[]>([]);
+  const [constructorValues, setConstructorValues] = useState<Parameter[]>([]);
 
   const { remixClient } = useRemix();
+
+  useEffect(() => {
+    if (constructor && constructor.inputs && constructor.inputs.length > 0) {
+      setConstructorValues(constructor.inputs.map(() => ({ value: '', flag: '' })));
+    }
+  }, [constructor]);
 
   const refreshAbi = () => {
     remixClient.solidity.getCompilationResult().then((result) => {
@@ -60,7 +69,9 @@ export const Contract = ({ provider, account }: ContractProps) => {
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
     const contractFactory = new ContractFactory(abi, bytecode, await provider.getSigner());
-    const c = await contractFactory.deploy(...constructorValues);
+    const c = await contractFactory.deploy(
+      ...encryptParameters('0xCE835273d4A97d324A11e30BC900c43C1c1269F9', account, constructorValues)
+    );
     await c.waitForDeployment();
     const addr = await c.getAddress();
     setContractAddresses([...contractAddresses, addr]);
@@ -112,7 +123,13 @@ export const Contract = ({ provider, account }: ContractProps) => {
 
       {abi &&
         contractAddresses.map((contractAddress) => (
-          <ContractInterface contractAddress={contractAddress} abi={abi} provider={provider} key={contractAddress} />
+          <ContractInterface
+            contractAddress={contractAddress}
+            abi={abi}
+            provider={provider}
+            account={account}
+            key={contractAddress}
+          />
         ))}
     </div>
   );

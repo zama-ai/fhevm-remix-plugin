@@ -1,7 +1,8 @@
 import { FunctionDescription } from '@remixproject/plugin-api';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Inputs } from '../Inputs';
 import { Button, Loader, Result } from '../../../common-ui';
+import { Parameter } from '../../../utils';
 
 export type ContractFunctionProps = {
   abiDescription: FunctionDescription;
@@ -9,9 +10,15 @@ export type ContractFunctionProps = {
 };
 
 export const ContractFunction: React.FC<ContractFunctionProps> = ({ abiDescription, onTransaction }) => {
-  const [values, setValues] = useState<string[]>([]);
+  const [values, setValues] = useState<Parameter[]>([]);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<string>();
+
+  useEffect(() => {
+    if (abiDescription.inputs && abiDescription.inputs.length > 0) {
+      setValues(abiDescription.inputs.map(() => ({ value: '', flag: '' })));
+    }
+  }, [abiDescription]);
 
   const onClickProp = async () => {
     try {
