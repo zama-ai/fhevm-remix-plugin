@@ -44,7 +44,7 @@ export const Accordion: React.FC<HeaderProps> = ({
         <div className="accordion__label">{visible ? labelOpen || label : label}</div>
         {!left && arrow}
       </div>
-      <div style={{ display: visible ? 'block' : 'none' }} className={classNames('px-1', containerClassName)}>
+      <div style={{ display: visible ? 'block' : 'none' }} className={classNames('px-1', 'pb-2', containerClassName)}>
         {children}
       </div>
     </div>
