@@ -1,5 +1,5 @@
 .zama_select {
-  font-size: 12px;
+  font-size: 12px !important;
   height: auto;
-  padding: 0 0.5rem;
+  padding: 0 0.5rem !important;
 }

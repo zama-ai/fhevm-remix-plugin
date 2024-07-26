@@ -21,9 +21,7 @@ export const Contract = ({ provider, account }: ContractProps) => {
   const [bytecode, setBytecode] = useState<string>();
   const [constructor, setConstructor] = useState<FunctionDescription>();
 
-  const [inputContractAddress, setInputContractAddress] = useState<string>(
-    '0x89fa7AD8b036af9eFB061f1ea945Da119eC4508F'
-  );
+  const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
   const [gateway, setGateway] = useState<string>('http://localhost:7077');
   const [contractAddresses, setContractAddresses] = useState<string[]>([]);
