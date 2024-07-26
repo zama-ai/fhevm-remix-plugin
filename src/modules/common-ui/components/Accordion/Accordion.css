@@ -1,3 +1,14 @@
+.zama_multiHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: bold;
+  min-height: 36px;
+}
+
 .accordion__label {
   display: flex;
   font-weight: normal;

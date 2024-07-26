@@ -18,6 +18,8 @@ export type InputsProps = {
   name: string;
   variant?: 'primary' | 'warning';
   titleButton?: boolean;
+  account: string;
+  contractAddress: string;
 };
 
 const isIndexed = (obj: any): obj is { indexed: boolean } => {
@@ -32,6 +34,8 @@ export const Inputs: React.FC<InputsProps> = ({
   onClick,
   variant = 'primary',
   titleButton = false,
+  account,
+  contractAddress,
 }) => {
   const [result, setResult] = useState('');
   const [loading, setLoading] = useState(false);
@@ -123,7 +127,7 @@ export const Inputs: React.FC<InputsProps> = ({
             Submit
           </Button>
         </div>
-        {result && <Result value={result} />}
+        {result && <Result value={result} userAddress={account} contractAddress={contractAddress} />}
       </Accordion>
     </>
   );

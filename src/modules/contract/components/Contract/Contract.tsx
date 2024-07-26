@@ -8,6 +8,7 @@ import './Contract.css';
 import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
 import { encryptParameters, Parameter } from '../../../utils';
+import { createFhevmInstance } from '../../../../fhevmjs';
 
 export type ContractProps = {
   provider: BrowserProvider;
@@ -24,7 +25,7 @@ export const Contract = ({ provider, account }: ContractProps) => {
     '0x89fa7AD8b036af9eFB061f1ea945Da119eC4508F'
   );
 
-  const [gateway, setGateway] = useState<string>('');
+  const [gateway, setGateway] = useState<string>('http://localhost:7077');
   const [contractAddresses, setContractAddresses] = useState<string[]>([]);
 
   const [constructorValues, setConstructorValues] = useState<Parameter[]>([]);
@@ -83,7 +84,9 @@ export const Contract = ({ provider, account }: ContractProps) => {
     setContractAddresses([...contractAddresses, addr]);
   };
 
-  const refreshInstance = () => {};
+  const refreshInstance = async () => {
+    await createFhevmInstance(gateway);
+  };
 
   let contractSection = <div>You need to select and compile a contract.</div>;
   if (abi && bytecode && name) {
@@ -99,6 +102,8 @@ export const Contract = ({ provider, account }: ContractProps) => {
               variant="warning"
               name="Deploy"
               onClick={onDeploy}
+              account={account}
+              contractAddress={'0x'}
             />
           )}
         </div>

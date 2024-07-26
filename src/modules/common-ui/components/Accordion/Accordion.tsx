@@ -25,7 +25,7 @@ export const Accordion: React.FC<HeaderProps> = ({
 
   const arrow = (
     <i
-      className={classNames('fas zama_methCaret', {
+      className={classNames('fas zama_methCaret', 'mx-1', {
         'fa-angle-up': visible,
         'fa-angle-down': !visible,
       })}
@@ -41,10 +41,10 @@ export const Accordion: React.FC<HeaderProps> = ({
         }}
       >
         {left && arrow}
-        <div className="accordion__label">{visible ? labelOpen || label : label}</div>
+        <div className="accordion__label px-1">{visible ? labelOpen || label : label}</div>
         {!left && arrow}
       </div>
-      <div style={{ display: visible ? 'block' : 'none' }} className={classNames('px-1', 'pb-2', containerClassName)}>
+      <div style={{ display: visible ? 'block' : 'none' }} className={classNames('pb-2', containerClassName)}>
         {children}
       </div>
     </div>

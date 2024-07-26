@@ -1,10 +1,28 @@
 .zama__result {
   display: flex;
   justify-content: flex-end;
-  margin: 8px 0;
 }
 
-.zama__result span {
+.zama__result .zama_value {
+  font-weight: normal;
+  font-size: 12px;
+  display: inline-block;
+  max-width: 120px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.zama__result .zama_reencrypt {
+  font-size: 10px;
+  border-radius: 3px;
+  color: var(--text);
+  background: var(--secondary);
+  padding: 2px 4px;
+  cursor: pointer;
+}
+
+.zama_decrypted {
   font-weight: normal;
   font-size: 12px;
   display: inline-block;

@@ -12,9 +12,8 @@ export const cleanFhevmInstance = () => {
   instance = null;
 };
 
-export const createFhevmInstance = async () => {
-  if (instancePromise) return instancePromise;
-  instancePromise = createInstance({ network: window.ethereum });
+export const createFhevmInstance = async (gatewayUrl?: string) => {
+  instancePromise = createInstance({ network: window.ethereum, gatewayUrl });
   instance = await instancePromise;
 };
 

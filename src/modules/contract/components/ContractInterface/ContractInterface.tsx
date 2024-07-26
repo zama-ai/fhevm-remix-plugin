@@ -58,7 +58,15 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({
             return res;
           }
         };
-        return <ContractFunction abiDescription={desc} onTransaction={onTransaction} key={`${desc.name}-${i}`} />;
+        return (
+          <ContractFunction
+            abiDescription={desc}
+            onTransaction={onTransaction}
+            account={account}
+            contractAddress={contractAddress}
+            key={`${desc.name}-${i}`}
+          />
+        );
       })}
     </Accordion>
   );
