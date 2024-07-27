@@ -12,7 +12,14 @@ export const cleanFhevmInstance = () => {
   instance = null;
 };
 
+let gateway: boolean = false;
+
+export const hasGateway = () => {
+  return gateway;
+};
+
 export const createFhevmInstance = async (gatewayUrl?: string) => {
+  gateway = !!gatewayUrl;
   instancePromise = createInstance({ network: window.ethereum, gatewayUrl });
   instance = await instancePromise;
 };

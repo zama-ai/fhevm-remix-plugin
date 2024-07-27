@@ -23,7 +23,7 @@ export const Contract = ({ provider, account }: ContractProps) => {
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
-  const [gateway, setGateway] = useState<string>('http://localhost:7077');
+  const [gateway, setGateway] = useState<string>('');
   const [contractAddresses, setContractAddresses] = useState<string[]>([]);
 
   const [constructorValues, setConstructorValues] = useState<Parameter[]>([]);
@@ -109,11 +109,14 @@ export const Contract = ({ provider, account }: ContractProps) => {
           <div className="d-flex flex-row">
             <Button
               onClick={() => {
-                const checksumAddress = getAddress(inputContractAddress);
-                console.log(isAddress(checksumAddress));
-                if (isAddress(checksumAddress) && contractAddresses.every((c) => c !== checksumAddress)) {
-                  setContractAddresses([...contractAddresses, checksumAddress]);
-                }
+                try {
+                  if (!inputContractAddress) return;
+                  const checksumAddress = getAddress(inputContractAddress);
+                  console.log(isAddress(checksumAddress));
+                  if (isAddress(checksumAddress) && contractAddresses.every((c) => c !== checksumAddress)) {
+                    setContractAddresses([...contractAddresses, checksumAddress]);
+                  }
+                } catch (e) {}
               }}
             >
               At address
@@ -148,7 +151,7 @@ export const Contract = ({ provider, account }: ContractProps) => {
       <div>
         <Label className="mt-2" label="Gateway" />
         <TextInput
-          placeholder="Gateway"
+          placeholder="Gateway URL"
           value={gateway}
           onChange={(e) => {
             setGateway(e.target.value);

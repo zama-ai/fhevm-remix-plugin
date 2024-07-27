@@ -42,13 +42,12 @@ export const Inputs: React.FC<InputsProps> = ({
 
   const onClickProp = async () => {
     setLoading(true);
+    setResult('');
     try {
       const res = await onClick();
-      console.log(res);
       if (res) setResult(res.toString());
       setLoading(false);
     } catch (e) {
-      console.log(e);
       setLoading(false);
     }
   };
@@ -121,7 +120,7 @@ export const Inputs: React.FC<InputsProps> = ({
               </div>
             );
           })}
-        <div className="d-flex zama_multiArg">
+        <div className="d-flex zama_multiArg my-2">
           {loading && <Loader />}
           <Button onClick={onClickProp} variant={variant}>
             Submit

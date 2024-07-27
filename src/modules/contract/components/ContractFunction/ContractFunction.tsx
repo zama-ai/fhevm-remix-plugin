@@ -30,13 +30,12 @@ export const ContractFunction: React.FC<ContractFunctionProps> = ({
   const onClickProp = async () => {
     try {
       return await onTransaction(values);
-    } catch (e) {
-      console.error(e);
-    }
+    } catch (e) {}
   };
 
   const onClick = async () => {
     setLoading(true);
+    setResult('');
     try {
       const res = await onTransaction(values);
       console.log(res);
