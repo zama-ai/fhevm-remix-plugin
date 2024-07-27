@@ -30,7 +30,7 @@ To install the fhEVM Remix Plugin, follow these steps:
 3. Click on "Connect to Local Plugin".
 4. Enter the following information:
    - Name: fhEVM Plugin
-   - URL: [URL to your plugin's entry point]
+   - URL: https://remix.zama.ai
 5. Click "Connect".
 
 ## Contributing
