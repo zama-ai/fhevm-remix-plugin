@@ -17,7 +17,7 @@ export const Homepage = () => {
           <li>Fill the name with "Zama" and the "Url" with "https://remix.zama.ai/"</li>
           <li>Keep "Iframe" and "Side panel" and validate</li>
         </ol>
-        <p align="center" dir="auto">
+        <p className="center" dir="auto">
           <a href="/zama-ai/fhevm/blob/main/fhevm-whitepaper.pdf"> 📃 Read white paper</a> |{' '}
           <a href="https://docs.zama.ai/fhevm" rel="nofollow">
             📒 Documentation
