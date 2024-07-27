@@ -148,6 +148,11 @@ export const Contract = ({ provider, account }: ContractProps) => {
 
   return (
     <div>
+      <div className="links_issue mt-2">
+        <a href="https://github.com/zama-ai/fhevm-remix-plugin/issues" rel="nofollow" target="_blank">
+          🚩 an issue?
+        </a>
+      </div>
       <div>
         <Label className="mt-2" label="Gateway" />
         <TextInput

@@ -41,3 +41,11 @@
   justify-content: flex-end;
   margin-top: 4px;
 }
+
+.links_issue {
+  text-align: right;
+  font-size: 11px;
+}
+
+.links_issue a {
+}

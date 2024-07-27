@@ -22,15 +22,14 @@ export const App = () => {
   }, []);
 
   useEffect(() => {
-    window.requestAnimationFrame(() => {
+    let timerId = window.setInterval(() => {
       try {
         remixClient.solidity.getCompilationResult().then(() => {
           setIsInIDE(true);
+          window.clearInterval(timerId);
         });
-      } catch (e) {
-        setIsInIDE(false);
-      }
-    });
+      } catch (e) {}
+    }, 200);
   }, []);
 
   if (!isInitialized || !isInIDE) {
@@ -46,6 +45,15 @@ export const App = () => {
           return <Contract provider={provider} account={account} />;
         }}
       </Connect>
+      <div className="links mt-2">
+        <a href="https://docs.zama.ai/fhevm" rel="nofollow" target="_blank">
+          📒 Documentation
+        </a>{' '}
+        |{' '}
+        <a href="https://zama.ai/community" rel="nofollow" target="_blank">
+          💛 Community support
+        </a>
+      </div>
     </div>
   );
 };
