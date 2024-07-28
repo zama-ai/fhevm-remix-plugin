@@ -1,3 +1,28 @@
+h1 {
+  margin: 0;
+}
+
+.page {
+  font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  background: #ffd209;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+}
+
+.page__content {
+  background: #fff;
+  padding: 20px;
+  margin: 20px;
+  border-radius: 10px;
+}
+
+.center {
+  text-align: center;
+}
+
 .links {
   text-align: center;
   font-size: 12px;

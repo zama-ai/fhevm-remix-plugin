@@ -49,3 +49,8 @@
 
 .links_issue a {
 }
+
+.Connect__account {
+  font-size: 10px;
+  background: var(--secondary);
+}

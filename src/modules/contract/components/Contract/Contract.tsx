@@ -1,34 +1,32 @@
-import { BrowserProvider, ContractFactory, getAddress, isAddress } from 'ethers';
+import { getAddress, isAddress } from 'ethers';
 import { useEffect, useState } from 'react';
 import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
-import { useRemix } from '../../../../remix';
+import { useWeb3, useFhevmjs, Parameter, useRemix, LOCALSTORAGE_GATEWAY } from '../../../utils';
 import { Button, Label, TextInput } from '../../../common-ui';
-
-import './Contract.css';
 import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
-import { encryptParameters, Parameter } from '../../../utils';
-import { createFhevmInstance } from '../../../../fhevmjs';
 
-export type ContractProps = {
-  provider: BrowserProvider;
-  account: string;
-};
+import './Contract.css';
+import { ContractFactory } from 'ethers';
 
-export const Contract = ({ provider, account }: ContractProps) => {
+export type ContractItem = { address: string; abi: ABIDescription[]; name: string };
+
+export const Contract = ({}) => {
+  const { account, provider } = useWeb3();
+  const { remixClient } = useRemix();
   const [name, setName] = useState<string>();
   const [abi, setAbi] = useState<ABIDescription[]>();
   const [bytecode, setBytecode] = useState<string>();
-  const [constructor, setConstructor] = useState<FunctionDescription>();
+  const [constructor, setConstructor] = useState<FunctionDescription | undefined>();
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
-  const [gateway, setGateway] = useState<string>('');
-  const [contractAddresses, setContractAddresses] = useState<string[]>([]);
+  const [gateway, setGateway] = useState<string>(window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '');
+  const [contractItems, setContractItems] = useState<ContractItem[]>([]);
 
   const [constructorValues, setConstructorValues] = useState<Parameter[]>([]);
 
-  const { remixClient } = useRemix();
+  const { encryptParameters, updateGatewayUrl } = useFhevmjs();
 
   useEffect(() => {
     if (constructor && constructor.inputs && constructor.inputs.length > 0) {
@@ -38,7 +36,6 @@ export const Contract = ({ provider, account }: ContractProps) => {
 
   const cleanState = () => {
     setConstructorValues([]);
-    setContractAddresses([]);
   };
 
   const refreshAbi = () => {
@@ -55,7 +52,7 @@ export const Contract = ({ provider, account }: ContractProps) => {
           if (currentAbi) {
             setAbi(currentAbi);
             const construct = currentAbi.find((desc) => desc.type === 'constructor') as FunctionDescription;
-            if (construct) setConstructor(construct);
+            setConstructor(construct);
           }
           const currentBytecode = contract.evm.bytecode.object;
           if (currentBytecode) {
@@ -73,17 +70,18 @@ export const Contract = ({ provider, account }: ContractProps) => {
 
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
-    const contractFactory = new ContractFactory(abi, bytecode, await provider.getSigner());
+    const contractFactory = new ContractFactory(abi, bytecode, await provider!.getSigner());
     const c = await contractFactory.deploy(
-      ...encryptParameters('0xCE835273d4A97d324A11e30BC900c43C1c1269F9', account, constructorValues)
+      ...encryptParameters('0xCE835273d4A97d324A11e30BC900c43C1c1269F9', account!, constructorValues)
     );
     await c.waitForDeployment();
     const addr = await c.getAddress();
-    setContractAddresses([...contractAddresses, addr]);
+    const copiedAbi = structuredClone(abi);
+    setContractItems([...contractItems, { address: addr, abi: copiedAbi, name: name! }]);
   };
 
   const refreshInstance = async () => {
-    await createFhevmInstance(gateway);
+    updateGatewayUrl(gateway);
   };
 
   let contractSection = <div>You need to select and compile a contract.</div>;
@@ -92,18 +90,15 @@ export const Contract = ({ provider, account }: ContractProps) => {
       <>
         <div className="form-check-label">{name}</div>
         <div className="zama_contractActionsContainerMultiInner text-dark">
-          {constructor && (
-            <Inputs
-              values={constructorValues}
-              setValues={setConstructorValues}
-              inputs={constructor.inputs || []}
-              variant="warning"
-              name="Deploy"
-              onClick={onDeploy}
-              account={account}
-              contractAddress={'0x'}
-            />
-          )}
+          <Inputs
+            values={constructorValues}
+            setValues={setConstructorValues}
+            inputs={constructor?.inputs || []}
+            variant="warning"
+            name="Deploy"
+            onClick={onDeploy}
+            contractAddress={'0x'}
+          />
         </div>
         <div className="d-flex flex-column zama_contractAddress">
           <div className="d-flex flex-row">
@@ -112,9 +107,9 @@ export const Contract = ({ provider, account }: ContractProps) => {
                 try {
                   if (!inputContractAddress) return;
                   const checksumAddress = getAddress(inputContractAddress);
-                  console.log(isAddress(checksumAddress));
-                  if (isAddress(checksumAddress) && contractAddresses.every((c) => c !== checksumAddress)) {
-                    setContractAddresses([...contractAddresses, checksumAddress]);
+                  const copiedAbi = structuredClone(abi);
+                  if (isAddress(checksumAddress) && contractItems.every((c) => c.address !== checksumAddress)) {
+                    setContractItems([...contractItems, { address: checksumAddress, abi: copiedAbi, name: name }]);
                   }
                 } catch (e) {}
               }}
@@ -131,17 +126,20 @@ export const Contract = ({ provider, account }: ContractProps) => {
             />
           </div>
         </div>
-        {abi &&
-          contractAddresses.map((contractAddress) => (
+        {contractItems.map((contractItem) => {
+          const onDelete = () => {
+            setContractItems(contractItems.filter((c) => c.address !== contractItem.address));
+          };
+          return (
             <ContractInterface
-              name={name}
-              contractAddress={contractAddress}
-              abi={abi}
-              provider={provider}
-              account={account}
-              key={contractAddress}
+              name={contractItem.name}
+              contractAddress={contractItem.address}
+              abi={contractItem.abi}
+              key={contractItem.address}
+              onDelete={onDelete}
             />
-          ))}
+          );
+        })}
       </>
     );
   }
@@ -151,6 +149,15 @@ export const Contract = ({ provider, account }: ContractProps) => {
       <div className="links_issue mt-2">
         <a href="https://github.com/zama-ai/fhevm-remix-plugin/issues" rel="nofollow" target="_blank">
           🚩 an issue?
+        </a>
+      </div>
+      <div className="p-2 my-2 Connect__account">
+        Connected with:
+        <br />
+        {account}
+        <br />
+        <a href="https://remix.zama.ai/disconnect" target="_blank">
+          Disconnect
         </a>
       </div>
       <div>

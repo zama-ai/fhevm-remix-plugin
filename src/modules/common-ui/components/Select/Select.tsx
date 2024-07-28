@@ -19,7 +19,9 @@ export const Select = ({ options, onChange, selected }: SelectProps) => {
       className="form-control border-dark zama_select"
     >
       {options.map((o) => (
-        <option value={o.value}>{o.label}</option>
+        <option value={o.value} key={o.value}>
+          {o.label}
+        </option>
       ))}
     </select>
   );

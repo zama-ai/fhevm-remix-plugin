@@ -1,9 +1,7 @@
-import './Homepage.css';
-
 export const Homepage = () => {
   return (
-    <div className="homepage">
-      <div className="homepage__content">
+    <div className="page">
+      <div className="page__content">
         <h1>Remix is not available anymore</h1>
         <p>
           We have decided to deprecate our Remix fork in favor of a new plugin we are currently developing. This plugin

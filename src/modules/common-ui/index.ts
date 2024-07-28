@@ -6,3 +6,4 @@ export * from './components/Accordion';
 export * from './components/IconCopy';
 export * from './components/Loader';
 export * from './components/Result';
+export * from './components/IconDelete';

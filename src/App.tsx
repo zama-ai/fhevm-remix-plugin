@@ -1,38 +1,29 @@
 import { useEffect, useState } from 'react';
-import { useRemix } from './remix';
-import { init } from './fhevmjs';
+import { useRemix } from './modules/utils';
+import { initFhevm } from 'fhevmjs';
 import './App.css';
 import { Contract } from './modules/contract';
+import { Homepage } from './pages/Homepage';
+import { Disconnect } from './pages/Disconnect';
 import { Connect } from './modules/layout/components/Connect';
-import { Homepage } from './Homepage';
 
 export const App = () => {
   const [isInitialized, setIsInitialized] = useState(false);
-  const [isInIDE, setIsInIDE] = useState(false);
-
-  const { remixClient } = useRemix();
-  console.log(remixClient);
+  const { loaded } = useRemix();
 
   useEffect(() => {
-    init()
+    initFhevm()
       .then(() => {
         setIsInitialized(true);
       })
       .catch(() => setIsInitialized(false));
   }, []);
 
-  useEffect(() => {
-    let timerId = window.setInterval(() => {
-      try {
-        remixClient.solidity.getCompilationResult().then(() => {
-          setIsInIDE(true);
-          window.clearInterval(timerId);
-        });
-      } catch (e) {}
-    }, 200);
-  }, []);
+  if (window.location.pathname === '/disconnect') {
+    return <Disconnect />;
+  }
 
-  if (!isInitialized || !isInIDE) {
+  if (!isInitialized || !loaded) {
     return <Homepage />;
   }
 
@@ -41,9 +32,7 @@ export const App = () => {
   return (
     <div className="run-tab">
       <Connect>
-        {(account, provider) => {
-          return <Contract provider={provider} account={account} />;
-        }}
+        <Contract />
       </Connect>
       <div className="links mt-2">
         <a href="https://docs.zama.ai/fhevm" rel="nofollow" target="_blank">

@@ -7,19 +7,17 @@ import { Parameter } from '../../../utils';
 export type ContractFunctionProps = {
   abiDescription: FunctionDescription;
   onTransaction: (values: any) => Promise<any>;
-  account: string;
   contractAddress: string;
 };
 
 export const ContractFunction: React.FC<ContractFunctionProps> = ({
   abiDescription,
   onTransaction,
-  account,
   contractAddress,
 }) => {
   const [values, setValues] = useState<Parameter[]>([]);
   const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<string>();
+  const [result, setResult] = useState<string | undefined>();
 
   useEffect(() => {
     if (abiDescription.inputs && abiDescription.inputs.length > 0) {
@@ -35,10 +33,10 @@ export const ContractFunction: React.FC<ContractFunctionProps> = ({
 
   const onClick = async () => {
     setLoading(true);
-    setResult('');
+    setResult(undefined);
+    console.log('wwww');
     try {
       const res = await onTransaction(values);
-      console.log(res);
       if (res != undefined) setResult(res.toString());
       setLoading(false);
     } catch (e) {
@@ -58,7 +56,6 @@ export const ContractFunction: React.FC<ContractFunctionProps> = ({
           onClick={onClickProp}
           variant={abiDescription.stateMutability === 'view' ? 'primary' : 'warning'}
           titleButton
-          account={account}
           contractAddress={contractAddress}
         />
       )}
@@ -68,7 +65,7 @@ export const ContractFunction: React.FC<ContractFunctionProps> = ({
             {abiDescription.name}
           </Button>
           {loading && <Loader />}
-          {result && <Result value={result} userAddress={account} contractAddress={contractAddress} />}
+          {result != null && <Result value={result} contractAddress={contractAddress} />}
         </div>
       )}
     </div>

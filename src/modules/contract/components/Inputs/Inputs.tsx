@@ -6,7 +6,7 @@ import { ReactNode, useState } from 'react';
 import './Inputs.css';
 import { SelectEncrypted } from '../SelectEncrypted';
 import classNames from 'classnames';
-import { InputProof } from '../../InputProof';
+import { InputProof } from '../InputProof';
 
 const INPUTPROOF_NAMES = ['inputProof', 'proof', 'zkproof', 'zkpok', 'input', 'proof', 'data', 'inputs'];
 
@@ -18,7 +18,6 @@ export type InputsProps = {
   name: string;
   variant?: 'primary' | 'warning';
   titleButton?: boolean;
-  account: string;
   contractAddress: string;
 };
 
@@ -34,15 +33,14 @@ export const Inputs: React.FC<InputsProps> = ({
   onClick,
   variant = 'primary',
   titleButton = false,
-  account,
   contractAddress,
 }) => {
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState<string | undefined>();
   const [loading, setLoading] = useState(false);
 
   const onClickProp = async () => {
     setLoading(true);
-    setResult('');
+    setResult(undefined);
     try {
       const res = await onClick();
       if (res) setResult(res.toString());
@@ -71,7 +69,8 @@ export const Inputs: React.FC<InputsProps> = ({
           inputs.map((v, i) => {
             if (isIndexed(v)) return;
             const canEncrypt = v.type === 'bytes32';
-            const canInputProof = v.type === 'bytes' && INPUTPROOF_NAMES.includes(v.name);
+            const canInputProof =
+              v.type === 'bytes' && INPUTPROOF_NAMES.some((n) => v.name.toLowerCase().includes(n.toLowerCase()));
             return (
               <div className="zama_multiArg" key={`${v.name}-${i}`}>
                 <Label label={`${v.name}`} />
@@ -126,7 +125,7 @@ export const Inputs: React.FC<InputsProps> = ({
             Submit
           </Button>
         </div>
-        {result && <Result value={result} userAddress={account} contractAddress={contractAddress} />}
+        {result != null && <Result value={result} contractAddress={contractAddress} />}
       </Accordion>
     </>
   );
