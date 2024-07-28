@@ -19,27 +19,36 @@ const keypairs: Keypairs = {};
 
 const createKey = (contractAddress: string, userAddress: string) => `${contractAddress}-${userAddress}`;
 
+let instance: FhevmInstance | undefined;
+let gatewayUrl: string = window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '';
+
 export const useFhevmjs = () => {
-  const [instance, setInstance] = useState<FhevmInstance>();
-  const [gatewayUrl, setGatewayUrl] = useState<string | undefined>(
-    window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || undefined
-  );
+  const [created, setCreated] = useState(false);
+
+  const refreshFhevmjs = async () => {
+    setCreated(false);
+    try {
+      const i = await createInstance({ network: window.ethereum, gatewayUrl });
+      if (i.getPublicKey()) {
+        instance = i;
+        setCreated(true);
+      }
+    } catch (e) {}
+  };
 
   useEffect(() => {
-    createInstance({ network: window.ethereum, gatewayUrl }).then((i) => {
-      setInstance(i);
-    });
+    refreshFhevmjs();
+
+    window.ethereum.on('chainChanged', refreshFhevmjs);
+    return () => {
+      window.ethereum.off('chainChanged', refreshFhevmjs);
+    };
   }, []);
 
-  useEffect(() => {
-    createInstance({ network: window.ethereum, gatewayUrl }).then((i) => {
-      setInstance(i);
-    });
-  }, [gatewayUrl]);
-
   const updateGatewayUrl = (url: string) => {
-    setGatewayUrl(url);
+    gatewayUrl = url;
     window.localStorage.setItem(LOCALSTORAGE_GATEWAY, url);
+    refreshFhevmjs();
   };
 
   const encryptParameters = (contractAddress: string, userAddress: string, params: Parameter[]): string[] => {
@@ -135,5 +144,5 @@ export const useFhevmjs = () => {
     }
   };
 
-  return { instance, gatewayUrl, updateGatewayUrl, encryptParameters, reencrypt };
+  return { instance, gatewayUrl, created, refreshFhevmjs, updateGatewayUrl, encryptParameters, reencrypt };
 };

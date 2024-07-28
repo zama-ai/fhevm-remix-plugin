@@ -6,6 +6,7 @@ import { Contract } from './modules/contract';
 import { Homepage } from './pages/Homepage';
 import { Disconnect } from './pages/Disconnect';
 import { Connect } from './modules/layout/components/Connect';
+import { Network } from './modules/layout/components/Network';
 
 export const App = () => {
   const [isInitialized, setIsInitialized] = useState(false);
@@ -32,7 +33,9 @@ export const App = () => {
   return (
     <div className="run-tab">
       <Connect>
-        <Contract />
+        <Network>
+          <Contract />
+        </Network>
       </Connect>
       <div className="links mt-2">
         <a href="https://docs.zama.ai/fhevm" rel="nofollow" target="_blank">
