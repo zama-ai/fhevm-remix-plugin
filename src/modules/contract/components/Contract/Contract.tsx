@@ -1,7 +1,7 @@
-import { getAddress, isAddress } from 'ethers';
+import { getAddress, isAddress, getCreateAddress } from 'ethers';
 import { useEffect, useState } from 'react';
 import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
-import { useWeb3, useFhevmjs, Parameter, useRemix, LOCALSTORAGE_GATEWAY } from '../../../utils';
+import { useWeb3, useFhevmjs, Parameter, useRemix, LOCALSTORAGE_GATEWAY, formatParameters } from '../../../utils';
 import { Button, Label, TextInput } from '../../../common-ui';
 import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
@@ -13,7 +13,7 @@ export type ContractItem = { address: string; abi: ABIDescription[]; name: strin
 
 export const Contract = ({}) => {
   const { account, provider } = useWeb3();
-  const { remixClient } = useRemix();
+  const { remixClient, info, log, error } = useRemix();
   const [name, setName] = useState<string>();
   const [abi, setAbi] = useState<ABIDescription[]>();
   const [bytecode, setBytecode] = useState<string>();
@@ -70,14 +70,26 @@ export const Contract = ({}) => {
 
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
+    if (constructorValues.some((v) => v.value === '' && v.flag !== 'inputProof')) return;
     const contractFactory = new ContractFactory(abi, bytecode, await provider!.getSigner());
-    const c = await contractFactory.deploy(
-      ...encryptParameters('0xCE835273d4A97d324A11e30BC900c43C1c1269F9', account!, constructorValues)
-    );
-    await c.waitForDeployment();
-    const addr = await c.getAddress();
-    const copiedAbi = structuredClone(abi);
-    setContractItems([...contractItems, { address: addr, abi: copiedAbi, name: name! }]);
+    const signer = await provider!.getSigner();
+    const nonce = await signer.getNonce();
+    const computedAddress = getCreateAddress({ from: account!, nonce });
+    log('Deploying contract');
+    log(`Deploy at ${computedAddress}`);
+    const parameters = encryptParameters(computedAddress, account!, constructorValues);
+    if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
+    try {
+      const c = await contractFactory.deploy(...parameters);
+      log('Waiting for deployment...');
+      await c.waitForDeployment();
+      const addr = await c.getAddress();
+      const copiedAbi = structuredClone(abi);
+      setContractItems([...contractItems, { address: addr, abi: copiedAbi, name: name! }]);
+      info('Deployment succeeded!');
+    } catch (e) {
+      error('Deployment failed!');
+    }
   };
 
   const refreshInstance = async () => {

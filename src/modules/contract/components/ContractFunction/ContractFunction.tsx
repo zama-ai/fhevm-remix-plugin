@@ -34,7 +34,6 @@ export const ContractFunction: React.FC<ContractFunctionProps> = ({
   const onClick = async () => {
     setLoading(true);
     setResult(undefined);
-    console.log('wwww');
     try {
       const res = await onTransaction(values);
       if (res != undefined) setResult(res.toString());

@@ -13,5 +13,21 @@ export const useRemix = () => {
     });
   }, []);
 
-  return { remixClient, loaded };
+  const log = async (value: string) => {
+    await remixClient.terminal.log({ value, type: 'log' });
+  };
+
+  const error = async (value: string) => {
+    await remixClient.terminal.log({ value, type: 'error' });
+  };
+
+  const warn = async (value: string) => {
+    await remixClient.terminal.log({ value, type: 'warn' });
+  };
+
+  const info = async (value: string) => {
+    await remixClient.terminal.log({ value, type: 'info' });
+  };
+
+  return { remixClient, loaded, log, warn, error, info };
 };

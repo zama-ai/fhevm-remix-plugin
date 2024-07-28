@@ -107,7 +107,6 @@ export const useFhevmjs = () => {
           }
         }
       });
-      console.log(values);
       return values;
     } else {
       return params.map((o) => o.value);

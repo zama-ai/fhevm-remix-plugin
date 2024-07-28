@@ -11,3 +11,21 @@ export const createTransaction = async <A extends [...{ [I in keyof A]-?: A[I] }
   ];
   return method(...updatedParams);
 };
+
+export const formatParameters = (arr: (string | number | Uint8Array | any[])[]): string => {
+  return arr
+    .map((item) => {
+      if (typeof item === 'string') {
+        return item;
+      } else if (typeof item === 'number') {
+        return item.toString();
+      } else if (item instanceof Uint8Array) {
+        return `<bytes: ${item.length} items>`;
+      } else if (Array.isArray(item)) {
+        return `[${formatParameters(item)}]`;
+      } else {
+        return '<unknown>';
+      }
+    })
+    .join(', ');
+};
