@@ -1,5 +1,3 @@
-import copy from 'copy-to-clipboard';
-
 import './IconDelete.css';
 
 export type IconDeleteProps = {
