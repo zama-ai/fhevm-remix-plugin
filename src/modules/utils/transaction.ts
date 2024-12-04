@@ -1,6 +1,8 @@
 import { ContractMethod, ContractMethodArgs } from 'ethers';
 
-export const createTransaction = async <A extends [...{ [I in keyof A]-?: A[I] }]>(
+export const createTransaction = async <
+  A extends [...{ [I in keyof A]-?: A[I] }],
+>(
   method: ContractMethod<A>,
   ...params: A
 ) => {
@@ -12,7 +14,9 @@ export const createTransaction = async <A extends [...{ [I in keyof A]-?: A[I] }
   return method(...updatedParams);
 };
 
-export const formatParameters = (arr: (string | number | Uint8Array | any[])[]): string => {
+export const formatParameters = (
+  arr: (string | number | Uint8Array | any[])[],
+): string => {
   return arr
     .map((item) => {
       if (typeof item === 'string') {

@@ -8,6 +8,8 @@
     "dev": "node dev.js",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "prettier:check": "prettier --check \"**/*.{js,json,md,sol,ts,yml}\"",
+    "prettier": "prettier --write \"**/*.{js,json,md,sol,ts,yml}\"",
     "preview": "vite preview",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

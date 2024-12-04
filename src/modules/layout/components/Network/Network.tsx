@@ -1,4 +1,4 @@
-import { useFhevmjs } from "../../../utils";
+import { useFhevmjs } from '../../../utils';
 
 export const Network: React.FC<{
   children: React.ReactNode;

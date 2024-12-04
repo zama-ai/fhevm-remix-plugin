@@ -1,6 +1,6 @@
-import { getAddress, isAddress, getCreateAddress } from "ethers";
-import { useEffect, useState } from "react";
-import { ABIDescription, FunctionDescription } from "@remixproject/plugin-api";
+import { getAddress, isAddress, getCreateAddress } from 'ethers';
+import { useEffect, useState } from 'react';
+import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
 import {
   useWeb3,
   useFhevmjs,
@@ -10,13 +10,13 @@ import {
   formatParameters,
   LOCALSTORAGE_ACL_ADDRESS,
   LOCALSTORAGE_KMS_VERIFIER_ADDRESS,
-} from "../../../utils";
-import { Button, Label, TextInput, Select } from "../../../common-ui";
-import { Inputs } from "../Inputs";
-import { ContractInterface } from "../ContractInterface";
+} from '../../../utils';
+import { Button, Label, TextInput, Select } from '../../../common-ui';
+import { Inputs } from '../Inputs';
+import { ContractInterface } from '../ContractInterface';
 
-import "./Contract.css";
-import { ContractFactory } from "ethers";
+import './Contract.css';
+import { ContractFactory } from 'ethers';
 
 export type ContractItem = {
   address: string;
@@ -34,21 +34,21 @@ export const Contract = ({}) => {
     FunctionDescription | undefined
   >();
 
-  const [networkMode, setNetworkMode] = useState<string>("zama");
+  const [networkMode, setNetworkMode] = useState<string>('zama');
   const [networkFieldsDisabled, setNetworkFieldsDisabled] =
     useState<boolean>(true);
 
-  const [inputContractAddress, setInputContractAddress] = useState<string>("");
+  const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
   const [gateway, setGateway] = useState<string>(
-    window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || ""
+    window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '',
   );
   const [kmsVerifierAddress, setKMSVerifierAddress] = useState<string>(
-    window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || ""
+    window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || '',
   );
 
   const [aclAddress, setACLAddress] = useState<string>(
-    window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || ""
+    window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || '',
   );
   const [contractItems, setContractItems] = useState<ContractItem[]>([]);
 
@@ -64,7 +64,7 @@ export const Contract = ({}) => {
   useEffect(() => {
     if (constructor && constructor.inputs && constructor.inputs.length > 0) {
       setConstructorValues(
-        constructor.inputs.map(() => ({ value: "", flag: "" }))
+        constructor.inputs.map(() => ({ value: '', flag: '' })),
       );
     }
   }, [constructor]);
@@ -87,7 +87,7 @@ export const Contract = ({}) => {
           if (currentAbi) {
             setAbi(currentAbi);
             const construct = currentAbi.find(
-              (desc) => desc.type === "constructor"
+              (desc) => desc.type === 'constructor',
             ) as FunctionDescription;
             setConstructor(construct);
           }
@@ -101,15 +101,15 @@ export const Contract = ({}) => {
   };
 
   useEffect(() => {
-    remixClient.solidity.on("compilationFinished", refreshAbi);
+    remixClient.solidity.on('compilationFinished', refreshAbi);
     refreshAbi();
   }, []);
 
   useEffect(() => {
-    if (networkMode === "zama") {
-      setGateway("https://gateway-sepolia.kms-dev-v1.bc.zama.team/");
-      setKMSVerifierAddress("0x9D6891A6240D6130c54ae243d8005063D05fE14b");
-      setACLAddress("0xFee8407e2f5e3Ee68ad77cAE98c434e637f516e5");
+    if (networkMode === 'zama') {
+      setGateway('https://gateway-sepolia.kms-dev-v1.bc.zama.team/');
+      setKMSVerifierAddress('0x9D6891A6240D6130c54ae243d8005063D05fE14b');
+      setACLAddress('0xFee8407e2f5e3Ee68ad77cAE98c434e637f516e5');
       setNetworkFieldsDisabled(true);
     } else setNetworkFieldsDisabled(false);
   }, [networkMode]);
@@ -117,28 +117,28 @@ export const Contract = ({}) => {
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
     if (
-      constructorValues.some((v) => v.value === "" && v.flag !== "inputProof")
+      constructorValues.some((v) => v.value === '' && v.flag !== 'inputProof')
     )
       return;
     const contractFactory = new ContractFactory(
       abi,
       bytecode,
-      await provider!.getSigner()
+      await provider!.getSigner(),
     );
     const signer = await provider!.getSigner();
     const nonce = await signer.getNonce();
     const computedAddress = getCreateAddress({ from: account!, nonce });
-    log("Deploying contract");
+    log('Deploying contract');
     log(`Deploy at ${computedAddress}`);
     const parameters = await encryptParameters(
       computedAddress,
       account!,
-      constructorValues
+      constructorValues,
     );
     if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
     try {
       const c = await contractFactory.deploy(...parameters);
-      log("Waiting for deployment...");
+      log('Waiting for deployment...');
       await c.waitForDeployment();
       const addr = await c.getAddress();
       const copiedAbi = structuredClone(abi);
@@ -146,32 +146,32 @@ export const Contract = ({}) => {
         ...contractItems,
         { address: addr, abi: copiedAbi, name: name! },
       ]);
-      info("Deployment succeeded!");
+      info('Deployment succeeded!');
     } catch (e) {
-      error("Deployment failed!");
+      error('Deployment failed!');
     }
   };
 
   const refreshInstance = async () => {
     if (isAddress(kmsVerifierAddress)) {
       updateACLAddress(aclAddress);
-      info("KMS Verifier is a valid address");
+      info('KMS Verifier is a valid address');
     } else {
-      error("KMS Verifier is not a valid address");
+      error('KMS Verifier is not a valid address');
     }
 
     if (isAddress(aclAddress)) {
       updateKMSVerifierAddress(kmsVerifierAddress);
-      info("ACL is a valid address");
+      info('ACL is a valid address');
     } else {
-      error("ACL is not a valid address");
+      error('ACL is not a valid address');
     }
 
     if (gateway.length > 0) {
-      info("Gateway is set");
+      info('Gateway is set');
       updateGatewayUrl(gateway);
     } else {
-      error("Gateway url is not set");
+      error('Gateway url is not set');
     }
   };
 
@@ -188,7 +188,7 @@ export const Contract = ({}) => {
             variant="warning"
             name="Deploy"
             onClick={onDeploy}
-            contractAddress={"0x"}
+            contractAddress={'0x'}
           />
         </div>
         <div className="d-flex flex-column zama_contractAddress">
@@ -226,7 +226,7 @@ export const Contract = ({}) => {
         {contractItems.map((contractItem) => {
           const onDelete = () => {
             setContractItems(
-              contractItems.filter((c) => c.address !== contractItem.address)
+              contractItems.filter((c) => c.address !== contractItem.address),
             );
           };
           return (
@@ -265,8 +265,8 @@ export const Contract = ({}) => {
       </div>
       <Select
         options={[
-          { label: "Zama Coprocessor - Sepolia", value: "zama" },
-          { label: "Custom", value: "custom" },
+          { label: 'Zama Coprocessor - Sepolia', value: 'zama' },
+          { label: 'Custom', value: 'custom' },
         ]}
         onChange={(selectedOption) => setNetworkMode(selectedOption)}
         selected={networkMode}

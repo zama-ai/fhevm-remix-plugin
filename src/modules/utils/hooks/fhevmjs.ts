@@ -1,10 +1,10 @@
-import { useEffect, useState } from "react";
-import { createInstance, FhevmInstance } from "fhevmjs";
-import { isAddress } from "ethers/address";
+import { useEffect, useState } from 'react';
+import { createInstance, FhevmInstance } from 'fhevmjs';
+import { isAddress } from 'ethers/address';
 
-export const LOCALSTORAGE_GATEWAY = "gatewayUrl";
-export const LOCALSTORAGE_KMS_VERIFIER_ADDRESS = "kmsVerifierAddress";
-export const LOCALSTORAGE_ACL_ADDRESS = "aclAddress";
+export const LOCALSTORAGE_GATEWAY = 'gatewayUrl';
+export const LOCALSTORAGE_KMS_VERIFIER_ADDRESS = 'kmsVerifierAddress';
+export const LOCALSTORAGE_ACL_ADDRESS = 'aclAddress';
 
 export type Parameter = { value: string; flag: string };
 
@@ -25,13 +25,13 @@ const createKey = (contractAddress: string, userAddress: string) =>
 
 let instance: FhevmInstance | undefined;
 let gatewayUrl: string =
-  window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || "";
+  window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '';
 
 let kmsVerifierAddress: string =
-  window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || "";
+  window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || '';
 
 let aclAddress: string =
-  window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || "";
+  window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || '';
 
 export const useFhevmjs = () => {
   const [created, setCreated] = useState(false);
@@ -55,9 +55,9 @@ export const useFhevmjs = () => {
   useEffect(() => {
     refreshFhevmjs();
 
-    window.ethereum.on("chainChanged", refreshFhevmjs);
+    window.ethereum.on('chainChanged', refreshFhevmjs);
     return () => {
-      window.ethereum.off("chainChanged", refreshFhevmjs);
+      window.ethereum.off('chainChanged', refreshFhevmjs);
     };
   }, []);
 
@@ -69,7 +69,10 @@ export const useFhevmjs = () => {
 
   const updateKMSVerifierAddress = (address: string) => {
     kmsVerifierAddress = address;
-    window.localStorage.setItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS, kmsVerifierAddress);
+    window.localStorage.setItem(
+      LOCALSTORAGE_KMS_VERIFIER_ADDRESS,
+      kmsVerifierAddress,
+    );
     refreshFhevmjs();
   };
 
@@ -82,42 +85,42 @@ export const useFhevmjs = () => {
   const encryptParameters = async (
     contractAddress: string,
     userAddress: string,
-    params: Parameter[]
+    params: Parameter[],
   ): Promise<string[]> => {
     if (!instance) return params.map((p) => p.value);
     const input = instance.createEncryptedInput(contractAddress, userAddress);
     const values: any[] = [];
     params.forEach((param) => {
       switch (param.flag) {
-        case "ebool": {
+        case 'ebool': {
           input.addBool(!!param.value);
           break;
         }
-        case "euint4": {
+        case 'euint4': {
           input.add4(BigInt(param.value));
           break;
         }
-        case "euint8": {
+        case 'euint8': {
           input.add8(BigInt(param.value));
           break;
         }
-        case "euint16": {
+        case 'euint16': {
           input.add16(BigInt(param.value));
           break;
         }
-        case "euint32": {
+        case 'euint32': {
           input.add32(BigInt(param.value));
           break;
         }
-        case "euint64": {
+        case 'euint64': {
           input.add64(BigInt(param.value));
           break;
         }
-        case "euint128": {
+        case 'euint128': {
           input.add128(BigInt(param.value));
           break;
         }
-        case "eaddress": {
+        case 'eaddress': {
           input.addAddress(param.value);
           break;
         }
@@ -128,18 +131,18 @@ export const useFhevmjs = () => {
 
       params.forEach((param, i) => {
         switch (param.flag) {
-          case "ebool":
-          case "euint4":
-          case "euint8":
-          case "euint16":
-          case "euint32":
-          case "euint64":
-          case "euint128":
-          case "eaddress": {
+          case 'ebool':
+          case 'euint4':
+          case 'euint8':
+          case 'euint16':
+          case 'euint32':
+          case 'euint64':
+          case 'euint128':
+          case 'eaddress': {
             values[i] = handles.shift();
             break;
           }
-          case "inputProof": {
+          case 'inputProof': {
             values[i] = inputProof;
             break;
           }
@@ -157,7 +160,7 @@ export const useFhevmjs = () => {
   const reencrypt = async (
     contractAddress: string,
     userAddress: string,
-    value: bigint
+    value: bigint,
   ) => {
     if (!instance) return value;
     const key = createKey(contractAddress, userAddress);
@@ -169,12 +172,12 @@ export const useFhevmjs = () => {
       const eip712 = instance.createEIP712(
         publicKey,
         contractAddress,
-        userAddress
+        userAddress,
       );
       // Request the user's signature on the public key
       const params = [userAddress, JSON.stringify(eip712)];
       signature = await window.ethereum.request({
-        method: "eth_signTypedData_v4",
+        method: 'eth_signTypedData_v4',
         params,
       });
       keypairs[key] = { publicKey, privateKey, signature };
@@ -186,7 +189,7 @@ export const useFhevmjs = () => {
         publicKey,
         signature,
         contractAddress,
-        userAddress
+        userAddress,
       );
       return res;
     } catch (e) {

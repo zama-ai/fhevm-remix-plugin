@@ -27,7 +27,9 @@ export const useWeb3 = () => {
   };
 
   const onConnect = async () => {
-    const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
+    const accounts = await window.ethereum.request({
+      method: 'eth_requestAccounts',
+    });
     setAccount(accounts[0]);
   };
 
