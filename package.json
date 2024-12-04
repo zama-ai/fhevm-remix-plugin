@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "vite",
+    "dev": "node dev.js",
     "build": "tsc && vite build",
     "lint": "eslint src --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
@@ -47,7 +47,7 @@
     "fhevmjs": "^0.6.0-17",
     "prettier": "^3.3.3",
     "typescript": "^5.5.3",
-    "vite": "^5.3.3",
+    "vite": "^5.4.1",
     "vite-plugin-node-polyfills": "^0.22.0"
   },
   "engines": {
