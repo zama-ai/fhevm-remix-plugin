@@ -1,14 +1,30 @@
-import { ABIParameter } from '@remixproject/plugin-api';
+import { ABIParameter } from "@remixproject/plugin-api";
 
-import { Accordion, Button, Label, Loader, Result, TextInput } from '../../../common-ui';
-import { ReactNode, useState } from 'react';
+import {
+  Accordion,
+  Button,
+  Label,
+  Loader,
+  Result,
+  TextInput,
+} from "../../../common-ui";
+import { ReactNode, useState } from "react";
 
-import './Inputs.css';
-import { SelectEncrypted } from '../SelectEncrypted';
-import classNames from 'classnames';
-import { InputProof } from '../InputProof';
+import "./Inputs.css";
+import { SelectEncrypted } from "../SelectEncrypted";
+import classNames from "classnames";
+import { InputProof } from "../InputProof";
 
-const INPUTPROOF_NAMES = ['inputProof', 'proof', 'zkproof', 'zkpok', 'input', 'proof', 'data', 'inputs'];
+const INPUTPROOF_NAMES = [
+  "inputProof",
+  "proof",
+  "zkproof",
+  "zkpok",
+  "input",
+  "proof",
+  "data",
+  "inputs",
+];
 
 export type InputsProps = {
   values: { value: string; flag: string }[];
@@ -16,7 +32,7 @@ export type InputsProps = {
   inputs: (ABIParameter & { indexed: boolean }[]) | ABIParameter[];
   onClick: () => Promise<void | string>;
   name: string;
-  variant?: 'primary' | 'warning';
+  variant?: "primary" | "warning";
   titleButton?: boolean;
   contractAddress: string;
 };
@@ -31,7 +47,7 @@ export const Inputs: React.FC<InputsProps> = ({
   inputs,
   name,
   onClick,
-  variant = 'primary',
+  variant = "primary",
   titleButton = false,
   contractAddress,
 }) => {
@@ -68,9 +84,12 @@ export const Inputs: React.FC<InputsProps> = ({
           inputs.length > 0 &&
           inputs.map((v, i) => {
             if (isIndexed(v)) return;
-            const canEncrypt = v.type === 'bytes32';
+            const canEncrypt = v.type === "bytes32";
             const canInputProof =
-              v.type === 'bytes' && INPUTPROOF_NAMES.some((n) => v.name.toLowerCase().includes(n.toLowerCase()));
+              v.type === "bytes" &&
+              INPUTPROOF_NAMES.some((n) =>
+                v.name.toLowerCase().includes(n.toLowerCase())
+              );
             return (
               <div className="zama_multiArg" key={`${v.name}-${i}`}>
                 <Label label={`${v.name}`} />
@@ -82,13 +101,13 @@ export const Inputs: React.FC<InputsProps> = ({
                 >
                   <TextInput
                     placeholder={v.type}
-                    value={values[i].value || ''}
+                    value={values[i].value || ""}
                     onChange={(e) => {
                       const cValues = [...values];
                       cValues[i].value = e.target.value;
                       setValues(cValues);
                     }}
-                    disabled={values[i].flag === 'inputProof'}
+                    disabled={values[i].flag === "inputProof"}
                   />
                   {canEncrypt && (
                     <SelectEncrypted
@@ -104,15 +123,15 @@ export const Inputs: React.FC<InputsProps> = ({
                     <InputProof
                       onClick={() => {
                         const cValues = [...values];
-                        if (values[i].flag === 'inputProof') {
-                          cValues[i].flag = '';
+                        if (values[i].flag === "inputProof") {
+                          cValues[i].flag = "";
                         } else {
-                          cValues[i].flag = 'inputProof';
-                          cValues[i].value = '';
+                          cValues[i].flag = "inputProof";
+                          cValues[i].value = "";
                         }
                         setValues(cValues);
                       }}
-                      checked={values[i].flag === 'inputProof'}
+                      checked={values[i].flag === "inputProof"}
                     />
                   )}
                 </div>
@@ -125,7 +144,9 @@ export const Inputs: React.FC<InputsProps> = ({
             Submit
           </Button>
         </div>
-        {result != null && <Result value={result} contractAddress={contractAddress} />}
+        {result != null && (
+          <Result value={result} contractAddress={contractAddress} />
+        )}
       </Accordion>
     </>
   );

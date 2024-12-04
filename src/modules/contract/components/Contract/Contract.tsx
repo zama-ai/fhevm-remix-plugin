@@ -11,7 +11,7 @@ import {
   LOCALSTORAGE_ACL_ADDRESS,
   LOCALSTORAGE_KMS_VERIFIER_ADDRESS,
 } from "../../../utils";
-import { Button, Label, TextInput } from "../../../common-ui";
+import { Button, Label, TextInput, Select } from "../../../common-ui";
 import { Inputs } from "../Inputs";
 import { ContractInterface } from "../ContractInterface";
 
@@ -33,6 +33,10 @@ export const Contract = ({}) => {
   const [constructor, setConstructor] = useState<
     FunctionDescription | undefined
   >();
+
+  const [networkMode, setNetworkMode] = useState<string>("zama");
+  const [networkFieldsDisabled, setNetworkFieldsDisabled] =
+    useState<boolean>(true);
 
   const [inputContractAddress, setInputContractAddress] = useState<string>("");
 
@@ -101,6 +105,15 @@ export const Contract = ({}) => {
     refreshAbi();
   }, []);
 
+  useEffect(() => {
+    if (networkMode === "zama") {
+      setGateway("https://gateway-sepolia.kms-dev-v1.bc.zama.team/");
+      setKMSVerifierAddress("0x9D6891A6240D6130c54ae243d8005063D05fE14b");
+      setACLAddress("0xFee8407e2f5e3Ee68ad77cAE98c434e637f516e5");
+      setNetworkFieldsDisabled(true);
+    } else setNetworkFieldsDisabled(false);
+  }, [networkMode]);
+
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
     if (
@@ -154,7 +167,12 @@ export const Contract = ({}) => {
       error("ACL is not a valid address");
     }
 
-    updateGatewayUrl(gateway);
+    if (gateway.length > 0) {
+      info("Gateway is set");
+      updateGatewayUrl(gateway);
+    } else {
+      error("Gateway url is not set");
+    }
   };
 
   let contractSection = <div>You need to select and compile a contract.</div>;
@@ -245,9 +263,18 @@ export const Contract = ({}) => {
           Disconnect
         </a>
       </div>
+      <Select
+        options={[
+          { label: "Zama Coprocessor - Sepolia", value: "zama" },
+          { label: "Custom", value: "custom" },
+        ]}
+        onChange={(selectedOption) => setNetworkMode(selectedOption)}
+        selected={networkMode}
+      />
       <div>
         <Label className="mt-2" label="Gateway" />
         <TextInput
+          disabled={networkFieldsDisabled}
           placeholder="Gateway URL"
           value={gateway}
           onChange={(e) => {
@@ -256,6 +283,7 @@ export const Contract = ({}) => {
         />
         <Label className="mt-2" label="KMSVerifier" />
         <TextInput
+          disabled={networkFieldsDisabled}
           placeholder="KMS Verifier contract address"
           value={kmsVerifierAddress}
           onChange={(e) => {
@@ -264,15 +292,15 @@ export const Contract = ({}) => {
         />
         <Label className="mt-2" label="ACL" />
         <TextInput
+          disabled={networkFieldsDisabled}
           placeholder="ACL contract address"
           value={aclAddress}
           onChange={(e) => {
             setACLAddress(e.target.value);
-            error;
           }}
         />
         <div className="mt-2 mb-2">
-          <Button onClick={refreshInstance}>Use this gateway</Button>
+          <Button onClick={refreshInstance}>Use this configuration</Button>
         </div>
       </div>
       {contractSection}
