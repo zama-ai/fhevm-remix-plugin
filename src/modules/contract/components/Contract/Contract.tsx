@@ -18,6 +18,8 @@ import { ContractInterface } from '../ContractInterface';
 import './Contract.css';
 import { ContractFactory } from 'ethers';
 
+import ZamaSepoliaConfig from '../../../../../config/ZamaSepoliaConfig.json';
+
 export type ContractItem = {
   address: string;
   abi: ABIDescription[];
@@ -34,7 +36,9 @@ export const Contract = ({}) => {
     FunctionDescription | undefined
   >();
 
-  const [networkMode, setNetworkMode] = useState<string>('zama');
+  const [networkMode, setNetworkMode] = useState<string>(
+    ZamaSepoliaConfig.label,
+  );
   const [networkFieldsDisabled, setNetworkFieldsDisabled] =
     useState<boolean>(true);
 
@@ -106,10 +110,10 @@ export const Contract = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (networkMode === 'zama') {
-      setGateway('https://gateway-sepolia.kms-dev-v1.bc.zama.team/');
-      setKMSVerifierAddress('0x9D6891A6240D6130c54ae243d8005063D05fE14b');
-      setACLAddress('0xFee8407e2f5e3Ee68ad77cAE98c434e637f516e5');
+    if (networkMode === ZamaSepoliaConfig.value) {
+      setGateway(ZamaSepoliaConfig.addresses.gatewayUrl);
+      setKMSVerifierAddress(ZamaSepoliaConfig.addresses.kmsVerifierAddress);
+      setACLAddress(ZamaSepoliaConfig.addresses.aclAddress);
       setNetworkFieldsDisabled(true);
     } else setNetworkFieldsDisabled(false);
   }, [networkMode]);
@@ -155,9 +159,9 @@ export const Contract = ({}) => {
   const refreshInstance = async () => {
     if (isAddress(kmsVerifierAddress)) {
       updateACLAddress(aclAddress);
-      info('KMS Verifier is a valid address');
+      info('KMSVerifier is a valid address');
     } else {
-      error('KMS Verifier is not a valid address');
+      error('KMSVerifier is not a valid address');
     }
 
     if (isAddress(aclAddress)) {
@@ -265,7 +269,7 @@ export const Contract = ({}) => {
       </div>
       <Select
         options={[
-          { label: 'Zama Coprocessor - Sepolia', value: 'zama' },
+          { label: ZamaSepoliaConfig.label, value: ZamaSepoliaConfig.value },
           { label: 'Custom', value: 'custom' },
         ]}
         onChange={(selectedOption) => setNetworkMode(selectedOption)}
@@ -284,7 +288,7 @@ export const Contract = ({}) => {
         <Label className="mt-2" label="KMSVerifier" />
         <TextInput
           disabled={networkFieldsDisabled}
-          placeholder="KMS Verifier contract address"
+          placeholder="KMSVerifier contract address"
           value={kmsVerifierAddress}
           onChange={(e) => {
             setKMSVerifierAddress(e.target.value);
