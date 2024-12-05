@@ -18,7 +18,7 @@ import { ContractInterface } from '../ContractInterface';
 import './Contract.css';
 import { ContractFactory } from 'ethers';
 
-import ZamaSepoliaConfig from '../../../../../config/ZamaSepoliaConfig.json';
+import networks from '../../../../../config/networks.json';
 
 export type ContractItem = {
   address: string;
@@ -36,9 +36,14 @@ export const Contract = ({}) => {
     FunctionDescription | undefined
   >();
 
+  // @dev For now, options are hardcoded.
+  // chainId = 11155111 --> Sepolia
+  const options = networks['11155111'];
+
   const [networkMode, setNetworkMode] = useState<string>(
-    ZamaSepoliaConfig.label,
+    options[0] ? options[0].label : 'custom',
   );
+
   const [networkFieldsDisabled, setNetworkFieldsDisabled] =
     useState<boolean>(true);
 
@@ -110,10 +115,11 @@ export const Contract = ({}) => {
   }, []);
 
   useEffect(() => {
-    if (networkMode === ZamaSepoliaConfig.value) {
-      setGateway(ZamaSepoliaConfig.addresses.gatewayUrl);
-      setKMSVerifierAddress(ZamaSepoliaConfig.addresses.kmsVerifierAddress);
-      setACLAddress(ZamaSepoliaConfig.addresses.aclAddress);
+    const selectedOption = options.find((o) => o.label === networkMode);
+    if (selectedOption) {
+      setGateway(selectedOption.addresses.gatewayUrl);
+      setKMSVerifierAddress(selectedOption.addresses.kmsVerifierAddress);
+      setACLAddress(selectedOption.addresses.aclAddress);
       setNetworkFieldsDisabled(true);
     } else setNetworkFieldsDisabled(false);
   }, [networkMode]);
@@ -268,10 +274,7 @@ export const Contract = ({}) => {
         </a>
       </div>
       <Select
-        options={[
-          { label: ZamaSepoliaConfig.label, value: ZamaSepoliaConfig.value },
-          { label: 'Custom', value: 'custom' },
-        ]}
+        options={[...options, { label: 'Custom', value: 'custom' }]}
         onChange={(selectedOption) => setNetworkMode(selectedOption)}
         selected={networkMode}
       />
