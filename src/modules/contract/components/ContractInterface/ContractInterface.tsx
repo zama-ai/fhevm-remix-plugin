@@ -1,6 +1,6 @@
 import { FunctionDescription, ABIDescription } from '@remixproject/plugin-api';
 import { ContractFunction } from '../ContractFunction';
-import { FunctionFragment } from 'ethers';
+import { FunctionFragment, getAddress } from 'ethers';
 import { Accordion, IconCopy, IconDelete } from '../../../common-ui';
 import {
   useWeb3,
@@ -67,8 +67,8 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({
           const fragment = FunctionFragment.from(desc);
           const name = fragment.format();
           const parameters = await encryptParameters(
-            contractAddress,
-            account!,
+            getAddress(contractAddress),
+            getAddress(account!),
             values,
           );
           if (desc.stateMutability !== 'view') {

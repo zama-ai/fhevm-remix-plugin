@@ -141,8 +141,8 @@ export const Contract = ({}) => {
     log('Deploying contract');
     log(`Deploy at ${computedAddress}`);
     const parameters = await encryptParameters(
-      computedAddress,
-      account!,
+      getAddress(computedAddress),
+      getAddress(account!),
       constructorValues,
     );
     if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
