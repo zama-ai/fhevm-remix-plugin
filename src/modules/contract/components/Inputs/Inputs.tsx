@@ -1,6 +1,13 @@
 import { ABIParameter } from '@remixproject/plugin-api';
 
-import { Accordion, Button, Label, Loader, Result, TextInput } from '../../../common-ui';
+import {
+  Accordion,
+  Button,
+  Label,
+  Loader,
+  Result,
+  TextInput,
+} from '../../../common-ui';
 import { ReactNode, useState } from 'react';
 
 import './Inputs.css';
@@ -8,7 +15,16 @@ import { SelectEncrypted } from '../SelectEncrypted';
 import classNames from 'classnames';
 import { InputProof } from '../InputProof';
 
-const INPUTPROOF_NAMES = ['inputProof', 'proof', 'zkproof', 'zkpok', 'input', 'proof', 'data', 'inputs'];
+const INPUTPROOF_NAMES = [
+  'inputProof',
+  'proof',
+  'zkproof',
+  'zkpok',
+  'input',
+  'proof',
+  'data',
+  'inputs',
+];
 
 export type InputsProps = {
   values: { value: string; flag: string }[];
@@ -70,7 +86,10 @@ export const Inputs: React.FC<InputsProps> = ({
             if (isIndexed(v)) return;
             const canEncrypt = v.type === 'bytes32';
             const canInputProof =
-              v.type === 'bytes' && INPUTPROOF_NAMES.some((n) => v.name.toLowerCase().includes(n.toLowerCase()));
+              v.type === 'bytes' &&
+              INPUTPROOF_NAMES.some((n) =>
+                v.name.toLowerCase().includes(n.toLowerCase()),
+              );
             return (
               <div className="zama_multiArg" key={`${v.name}-${i}`}>
                 <Label label={`${v.name}`} />
@@ -125,7 +144,9 @@ export const Inputs: React.FC<InputsProps> = ({
             Submit
           </Button>
         </div>
-        {result != null && <Result value={result} contractAddress={contractAddress} />}
+        {result != null && (
+          <Result value={result} contractAddress={contractAddress} />
+        )}
       </Accordion>
     </>
   );

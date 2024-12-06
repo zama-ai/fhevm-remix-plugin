@@ -1,8 +1,15 @@
 import { FunctionDescription, ABIDescription } from '@remixproject/plugin-api';
 import { ContractFunction } from '../ContractFunction';
-import { FunctionFragment } from 'ethers';
+import { FunctionFragment, getAddress } from 'ethers';
 import { Accordion, IconCopy, IconDelete } from '../../../common-ui';
-import { useWeb3, useFhevmjs, Parameter, createTransaction, useRemix, formatParameters } from '../../../utils';
+import {
+  useWeb3,
+  useFhevmjs,
+  Parameter,
+  createTransaction,
+  useRemix,
+  formatParameters,
+} from '../../../utils';
 import './ContractInterface.css';
 import { Contract } from 'ethers';
 
@@ -13,7 +20,12 @@ export type ContractInterfaceProps = {
   onDelete: () => void;
 };
 
-export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAddress, name, abi, onDelete }) => {
+export const ContractInterface: React.FC<ContractInterfaceProps> = ({
+  contractAddress,
+  name,
+  abi,
+  onDelete,
+}) => {
   const { account, provider } = useWeb3();
   const { encryptParameters } = useFhevmjs();
   const { log, info, error } = useRemix();
@@ -45,16 +57,26 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAd
       {functionABI.map((desc, i) => {
         const onTransaction = async (values: Parameter[]) => {
           if (!desc.name) return;
-          if (values.some((v) => v.value === '' && v.flag !== 'inputProof')) return;
-          const contract = new Contract(contractAddress, abi, await provider!.getSigner());
+          if (values.some((v) => v.value === '' && v.flag !== 'inputProof'))
+            return;
+          const contract = new Contract(
+            contractAddress,
+            abi,
+            await provider!.getSigner(),
+          );
           const fragment = FunctionFragment.from(desc);
           const name = fragment.format();
-          const parameters = encryptParameters(contractAddress, account!, values);
+          const parameters = await encryptParameters(
+            getAddress(contractAddress),
+            getAddress(account!),
+            values,
+          );
           if (desc.stateMutability !== 'view') {
             log('Sending transaction');
             log(`Contract address: ${contractAddress}`);
             log(`Method: ${name}`);
-            if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
+            if (parameters.length > 0)
+              log(`Params: ${formatParameters(parameters)}`);
             try {
               const tx = await createTransaction(contract[name], ...parameters);
               log('Waiting for transaction...');
@@ -67,7 +89,8 @@ export const ContractInterface: React.FC<ContractInterfaceProps> = ({ contractAd
             log('Calling');
             log(`Contract address: ${contractAddress}`);
             log(`Method: ${name}`);
-            if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
+            if (parameters.length > 0)
+              log(`Params: ${formatParameters(parameters)}`);
             try {
               const res = await contract[name](...parameters);
               info(`Result: ${res.toString()}`);

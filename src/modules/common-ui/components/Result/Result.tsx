@@ -3,6 +3,7 @@ import { IconCopy } from '../IconCopy';
 import { useFhevmjs, useWeb3 } from '../../../utils';
 
 import './Result.css';
+import { getAddress } from 'ethers';
 
 export type ResultProps = {
   value: string;
@@ -26,7 +27,7 @@ export const Result: React.FC<ResultProps> = ({ value, contractAddress }) => {
       {gatewayUrl && (
         <span
           onClick={async () => {
-            const dec = await reencrypt(contractAddress, account!, BigInt(value));
+            const dec = await reencrypt(getAddress(contractAddress), getAddress(account!), BigInt(value));
             setDecryption(dec?.toString());
           }}
           className="zama_reencrypt"

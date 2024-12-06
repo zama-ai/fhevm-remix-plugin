@@ -1,15 +1,30 @@
 import { getAddress, isAddress, getCreateAddress } from 'ethers';
 import { useEffect, useState } from 'react';
 import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
-import { useWeb3, useFhevmjs, Parameter, useRemix, LOCALSTORAGE_GATEWAY, formatParameters } from '../../../utils';
-import { Button, Label, TextInput } from '../../../common-ui';
+import {
+  useWeb3,
+  useFhevmjs,
+  Parameter,
+  useRemix,
+  LOCALSTORAGE_GATEWAY,
+  formatParameters,
+  LOCALSTORAGE_ACL_ADDRESS,
+  LOCALSTORAGE_KMS_VERIFIER_ADDRESS,
+} from '../../../utils';
+import { Button, Label, TextInput, Select } from '../../../common-ui';
 import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
 
 import './Contract.css';
 import { ContractFactory } from 'ethers';
 
-export type ContractItem = { address: string; abi: ABIDescription[]; name: string };
+import networks from '../../../../../config/networks.json';
+
+export type ContractItem = {
+  address: string;
+  abi: ABIDescription[];
+  name: string;
+};
 
 export const Contract = ({}) => {
   const { account, provider } = useWeb3();
@@ -17,20 +32,49 @@ export const Contract = ({}) => {
   const [name, setName] = useState<string>();
   const [abi, setAbi] = useState<ABIDescription[]>();
   const [bytecode, setBytecode] = useState<string>();
-  const [constructor, setConstructor] = useState<FunctionDescription | undefined>();
+  const [constructor, setConstructor] = useState<
+    FunctionDescription | undefined
+  >();
+
+  // @dev For now, options are hardcoded.
+  // chainId = 11155111 --> Sepolia
+  const options = networks['11155111'];
+
+  const [networkMode, setNetworkMode] = useState<string>(
+    options[0] ? options[0].label : 'custom',
+  );
+
+  const [networkFieldsDisabled, setNetworkFieldsDisabled] =
+    useState<boolean>(true);
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
-  const [gateway, setGateway] = useState<string>(window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '');
+  const [gateway, setGateway] = useState<string>(
+    window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '',
+  );
+  const [kmsVerifierAddress, setKMSVerifierAddress] = useState<string>(
+    window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || '',
+  );
+
+  const [aclAddress, setACLAddress] = useState<string>(
+    window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || '',
+  );
   const [contractItems, setContractItems] = useState<ContractItem[]>([]);
 
   const [constructorValues, setConstructorValues] = useState<Parameter[]>([]);
 
-  const { encryptParameters, updateGatewayUrl } = useFhevmjs();
+  const {
+    encryptParameters,
+    updateGatewayUrl,
+    updateKMSVerifierAddress,
+    updateACLAddress,
+  } = useFhevmjs();
 
   useEffect(() => {
     if (constructor && constructor.inputs && constructor.inputs.length > 0) {
-      setConstructorValues(constructor.inputs.map(() => ({ value: '', flag: '' })));
+      setConstructorValues(
+        constructor.inputs.map(() => ({ value: '', flag: '' })),
+      );
     }
   }, [constructor]);
 
@@ -51,7 +95,9 @@ export const Contract = ({}) => {
           const currentAbi = contract.abi;
           if (currentAbi) {
             setAbi(currentAbi);
-            const construct = currentAbi.find((desc) => desc.type === 'constructor') as FunctionDescription;
+            const construct = currentAbi.find(
+              (desc) => desc.type === 'constructor',
+            ) as FunctionDescription;
             setConstructor(construct);
           }
           const currentBytecode = contract.evm.bytecode.object;
@@ -68,16 +114,37 @@ export const Contract = ({}) => {
     refreshAbi();
   }, []);
 
+  useEffect(() => {
+    const selectedOption = options.find((o) => o.label === networkMode);
+    if (selectedOption) {
+      setGateway(selectedOption.addresses.gatewayUrl);
+      setKMSVerifierAddress(selectedOption.addresses.kmsVerifierAddress);
+      setACLAddress(selectedOption.addresses.aclAddress);
+      setNetworkFieldsDisabled(true);
+    } else setNetworkFieldsDisabled(false);
+  }, [networkMode]);
+
   const onDeploy = async () => {
     if (!abi || !bytecode) return;
-    if (constructorValues.some((v) => v.value === '' && v.flag !== 'inputProof')) return;
-    const contractFactory = new ContractFactory(abi, bytecode, await provider!.getSigner());
+    if (
+      constructorValues.some((v) => v.value === '' && v.flag !== 'inputProof')
+    )
+      return;
+    const contractFactory = new ContractFactory(
+      abi,
+      bytecode,
+      await provider!.getSigner(),
+    );
     const signer = await provider!.getSigner();
     const nonce = await signer.getNonce();
     const computedAddress = getCreateAddress({ from: account!, nonce });
     log('Deploying contract');
     log(`Deploy at ${computedAddress}`);
-    const parameters = encryptParameters(computedAddress, account!, constructorValues);
+    const parameters = await encryptParameters(
+      getAddress(computedAddress),
+      getAddress(account!),
+      constructorValues,
+    );
     if (parameters.length > 0) log(`Params: ${formatParameters(parameters)}`);
     try {
       const c = await contractFactory.deploy(...parameters);
@@ -85,7 +152,10 @@ export const Contract = ({}) => {
       await c.waitForDeployment();
       const addr = await c.getAddress();
       const copiedAbi = structuredClone(abi);
-      setContractItems([...contractItems, { address: addr, abi: copiedAbi, name: name! }]);
+      setContractItems([
+        ...contractItems,
+        { address: addr, abi: copiedAbi, name: name! },
+      ]);
       info('Deployment succeeded!');
     } catch (e) {
       error('Deployment failed!');
@@ -93,7 +163,26 @@ export const Contract = ({}) => {
   };
 
   const refreshInstance = async () => {
-    updateGatewayUrl(gateway);
+    if (isAddress(kmsVerifierAddress)) {
+      updateACLAddress(aclAddress);
+      info('KMSVerifier is a valid address');
+    } else {
+      error('KMSVerifier is not a valid address');
+    }
+
+    if (isAddress(aclAddress)) {
+      updateKMSVerifierAddress(kmsVerifierAddress);
+      info('ACL is a valid address');
+    } else {
+      error('ACL is not a valid address');
+    }
+
+    if (gateway.length > 0) {
+      info('Gateway is set');
+      updateGatewayUrl(gateway);
+    } else {
+      error('Gateway url is not set');
+    }
   };
 
   let contractSection = <div>You need to select and compile a contract.</div>;
@@ -120,8 +209,14 @@ export const Contract = ({}) => {
                   if (!inputContractAddress) return;
                   const checksumAddress = getAddress(inputContractAddress);
                   const copiedAbi = structuredClone(abi);
-                  if (isAddress(checksumAddress) && contractItems.every((c) => c.address !== checksumAddress)) {
-                    setContractItems([...contractItems, { address: checksumAddress, abi: copiedAbi, name: name }]);
+                  if (
+                    isAddress(checksumAddress) &&
+                    contractItems.every((c) => c.address !== checksumAddress)
+                  ) {
+                    setContractItems([
+                      ...contractItems,
+                      { address: checksumAddress, abi: copiedAbi, name: name },
+                    ]);
                   }
                 } catch (e) {}
               }}
@@ -140,7 +235,9 @@ export const Contract = ({}) => {
         </div>
         {contractItems.map((contractItem) => {
           const onDelete = () => {
-            setContractItems(contractItems.filter((c) => c.address !== contractItem.address));
+            setContractItems(
+              contractItems.filter((c) => c.address !== contractItem.address),
+            );
           };
           return (
             <ContractInterface
@@ -159,7 +256,11 @@ export const Contract = ({}) => {
   return (
     <div>
       <div className="links_issue mt-2">
-        <a href="https://github.com/zama-ai/fhevm-remix-plugin/issues" rel="nofollow" target="_blank">
+        <a
+          href="https://github.com/zama-ai/fhevm-remix-plugin/issues"
+          rel="nofollow"
+          target="_blank"
+        >
           🚩 an issue?
         </a>
       </div>
@@ -172,17 +273,41 @@ export const Contract = ({}) => {
           Disconnect
         </a>
       </div>
+      <Select
+        options={[...options, { label: 'Custom', value: 'custom' }]}
+        onChange={(selectedOption) => setNetworkMode(selectedOption)}
+        selected={networkMode}
+      />
       <div>
         <Label className="mt-2" label="Gateway" />
         <TextInput
+          disabled={networkFieldsDisabled}
           placeholder="Gateway URL"
           value={gateway}
           onChange={(e) => {
             setGateway(e.target.value);
           }}
         />
+        <Label className="mt-2" label="KMSVerifier" />
+        <TextInput
+          disabled={networkFieldsDisabled}
+          placeholder="KMSVerifier contract address"
+          value={kmsVerifierAddress}
+          onChange={(e) => {
+            setKMSVerifierAddress(e.target.value);
+          }}
+        />
+        <Label className="mt-2" label="ACL" />
+        <TextInput
+          disabled={networkFieldsDisabled}
+          placeholder="ACL contract address"
+          value={aclAddress}
+          onChange={(e) => {
+            setACLAddress(e.target.value);
+          }}
+        />
         <div className="mt-2 mb-2">
-          <Button onClick={refreshInstance}>Use this gateway</Button>
+          <Button onClick={refreshInstance}>Use this configuration</Button>
         </div>
       </div>
       {contractSection}

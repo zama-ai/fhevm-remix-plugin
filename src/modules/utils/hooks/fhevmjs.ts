@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react';
 import { createInstance, FhevmInstance } from 'fhevmjs';
 
 export const LOCALSTORAGE_GATEWAY = 'gatewayUrl';
+export const LOCALSTORAGE_KMS_VERIFIER_ADDRESS = 'kmsVerifierAddress';
+export const LOCALSTORAGE_ACL_ADDRESS = 'aclAddress';
 
 export type Parameter = { value: string; flag: string };
 
@@ -17,10 +19,18 @@ export type Keypairs = {
 
 const keypairs: Keypairs = {};
 
-const createKey = (contractAddress: string, userAddress: string) => `${contractAddress}-${userAddress}`;
+const createKey = (contractAddress: string, userAddress: string) =>
+  `${contractAddress}-${userAddress}`;
 
 let instance: FhevmInstance | undefined;
-let gatewayUrl: string = window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '';
+let gatewayUrl: string =
+  window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '';
+
+let kmsVerifierAddress: string =
+  window.localStorage.getItem(LOCALSTORAGE_KMS_VERIFIER_ADDRESS) || '';
+
+let aclAddress: string =
+  window.localStorage.getItem(LOCALSTORAGE_ACL_ADDRESS) || '';
 
 export const useFhevmjs = () => {
   const [created, setCreated] = useState(false);
@@ -28,7 +38,12 @@ export const useFhevmjs = () => {
   const refreshFhevmjs = async () => {
     setCreated(false);
     try {
-      const i = await createInstance({ network: window.ethereum, gatewayUrl });
+      const i = await createInstance({
+        network: window.ethereum,
+        gatewayUrl: gatewayUrl,
+        kmsContractAddress: kmsVerifierAddress,
+        aclContractAddress: aclAddress,
+      });
       if (i.getPublicKey()) {
         instance = i;
         setCreated(true);
@@ -51,7 +66,26 @@ export const useFhevmjs = () => {
     refreshFhevmjs();
   };
 
-  const encryptParameters = (contractAddress: string, userAddress: string, params: Parameter[]): string[] => {
+  const updateKMSVerifierAddress = (address: string) => {
+    kmsVerifierAddress = address;
+    window.localStorage.setItem(
+      LOCALSTORAGE_KMS_VERIFIER_ADDRESS,
+      kmsVerifierAddress,
+    );
+    refreshFhevmjs();
+  };
+
+  const updateACLAddress = (address: string) => {
+    aclAddress = address;
+    window.localStorage.setItem(LOCALSTORAGE_ACL_ADDRESS, aclAddress);
+    refreshFhevmjs();
+  };
+
+  const encryptParameters = async (
+    contractAddress: string,
+    userAddress: string,
+    params: Parameter[],
+  ): Promise<string[]> => {
     if (!instance) return params.map((p) => p.value);
     const input = instance.createEncryptedInput(contractAddress, userAddress);
     const values: any[] = [];
@@ -91,8 +125,8 @@ export const useFhevmjs = () => {
         }
       }
     });
-    if (input.getValues().length > 0) {
-      const { handles, inputProof } = input.encrypt();
+    if (input.getBits().length > 0) {
+      const { handles, inputProof } = await input.encrypt();
 
       params.forEach((param, i) => {
         switch (param.flag) {
@@ -122,7 +156,11 @@ export const useFhevmjs = () => {
     }
   };
 
-  const reencrypt = async (contractAddress: string, userAddress: string, value: bigint) => {
+  const reencrypt = async (
+    contractAddress: string,
+    userAddress: string,
+    value: bigint,
+  ) => {
     if (!instance) return value;
     const key = createKey(contractAddress, userAddress);
     let { publicKey, privateKey, signature } = keypairs[key] || {};
@@ -130,19 +168,43 @@ export const useFhevmjs = () => {
       const keypair = instance.generateKeypair();
       privateKey = keypair.privateKey;
       publicKey = keypair.publicKey;
-      const eip712 = instance.createEIP712(publicKey, contractAddress, userAddress);
+      const eip712 = instance.createEIP712(
+        publicKey,
+        contractAddress,
+        userAddress,
+      );
       // Request the user's signature on the public key
       const params = [userAddress, JSON.stringify(eip712)];
-      signature = await window.ethereum.request({ method: 'eth_signTypedData_v4', params });
+      signature = await window.ethereum.request({
+        method: 'eth_signTypedData_v4',
+        params,
+      });
       keypairs[key] = { publicKey, privateKey, signature };
     }
     try {
-      const res = await instance.reencrypt(value, privateKey, publicKey, signature, contractAddress, userAddress);
+      const res = await instance.reencrypt(
+        value,
+        privateKey,
+        publicKey,
+        signature,
+        contractAddress,
+        userAddress,
+      );
       return res;
     } catch (e) {
       console.log(e);
     }
   };
 
-  return { instance, gatewayUrl, created, refreshFhevmjs, updateGatewayUrl, encryptParameters, reencrypt };
+  return {
+    instance,
+    gatewayUrl,
+    created,
+    refreshFhevmjs,
+    updateGatewayUrl,
+    updateKMSVerifierAddress,
+    updateACLAddress,
+    encryptParameters,
+    reencrypt,
+  };
 };

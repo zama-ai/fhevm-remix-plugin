@@ -7,4 +7,18 @@ import basicSsl from '@vitejs/plugin-basic-ssl';
 export default defineConfig({
   assetsInclude: ['**/*.bin'],
   plugins: [react(), nodePolyfills(), basicSsl()],
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+    },
+  },
+  worker: {
+    format: 'es',
+    rollupOptions: {
+      output: {
+        entryFileNames: '[name].js',
+      },
+    },
+  },
 });
