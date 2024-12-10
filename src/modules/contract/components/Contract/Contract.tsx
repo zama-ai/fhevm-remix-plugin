@@ -1,6 +1,8 @@
 import { getAddress, isAddress, getCreateAddress } from 'ethers';
 import { useEffect, useState } from 'react';
 import { ABIDescription, FunctionDescription } from '@remixproject/plugin-api';
+import { ContractFactory } from 'ethers';
+
 import {
   useWeb3,
   useFhevmjs,
@@ -16,7 +18,6 @@ import { Inputs } from '../Inputs';
 import { ContractInterface } from '../ContractInterface';
 
 import './Contract.css';
-import { ContractFactory } from 'ethers';
 
 import networks from '../../../../../config/networks.json';
 
@@ -49,7 +50,7 @@ export const Contract = ({}) => {
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
-  const [gateway, setGateway] = useState<string>(
+  const [gatewayURL, setGateway] = useState<string>(
     window.localStorage.getItem(LOCALSTORAGE_GATEWAY) || '',
   );
   const [kmsVerifierAddress, setKMSVerifierAddress] = useState<string>(
@@ -165,23 +166,43 @@ export const Contract = ({}) => {
   const refreshInstance = async () => {
     if (isAddress(kmsVerifierAddress)) {
       updateACLAddress(aclAddress);
-      info('KMSVerifier is a valid address');
+      info('KMSVerifier is a valid address.');
     } else {
-      error('KMSVerifier is not a valid address');
+      error('KMSVerifier is not a valid address.');
     }
 
     if (isAddress(aclAddress)) {
       updateKMSVerifierAddress(kmsVerifierAddress);
-      info('ACL is a valid address');
+      info('ACL is a valid address.');
     } else {
-      error('ACL is not a valid address');
+      error('ACL is not a valid address.');
     }
 
-    if (gateway.length > 0) {
-      info('Gateway is set');
-      updateGatewayUrl(gateway);
-    } else {
-      error('Gateway url is not set');
+    const adjustedGatewayURL = gatewayURL.endsWith('/')
+      ? gatewayURL
+      : gatewayURL + '/';
+
+    try {
+      const response = await fetch(adjustedGatewayURL + 'keyurl');
+
+      if (response.status !== 200) {
+        error('Gateway URL is invalid. Check console for details.');
+        console.error(
+          `Failed to fetch data from ${gatewayURL}, status: ${response.status}`,
+        );
+      } else {
+        const jsonResponse = await response.json();
+
+        if (jsonResponse.status === 'success') {
+          updateGatewayUrl(adjustedGatewayURL);
+          info('Gateway URL is set.');
+        } else {
+          error('Gateway URL status does not return success.');
+        }
+      }
+    } catch (e) {
+      error('Gateway URL is not valid. Check console for details.');
+      console.error('Error fetching data:', e);
     }
   };
 
@@ -283,7 +304,7 @@ export const Contract = ({}) => {
         <TextInput
           disabled={networkFieldsDisabled}
           placeholder="Gateway URL"
-          value={gateway}
+          value={gatewayURL}
           onChange={(e) => {
             setGateway(e.target.value);
           }}
