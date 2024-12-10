@@ -164,18 +164,18 @@ export const Contract = ({}) => {
   };
 
   const refreshInstance = async () => {
-    if (isAddress(kmsVerifierAddress)) {
-      updateACLAddress(aclAddress);
-      info('KMSVerifier is a valid address.');
-    } else {
-      error('KMSVerifier is not a valid address.');
-    }
-
     if (isAddress(aclAddress)) {
-      updateKMSVerifierAddress(kmsVerifierAddress);
+      updateACLAddress(aclAddress);
       info('ACL is a valid address.');
     } else {
       error('ACL is not a valid address.');
+    }
+
+    if (isAddress(kmsVerifierAddress)) {
+      updateKMSVerifierAddress(kmsVerifierAddress);
+      info('KMSVerifier is a valid address.');
+    } else {
+      error('KMSVerifier is not a valid address.');
     }
 
     const adjustedGatewayURL = gatewayURL.endsWith('/')
