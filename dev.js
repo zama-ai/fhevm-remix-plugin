@@ -1,4 +1,4 @@
-import { build, createServer, preview } from 'vite';
+import { build, preview } from 'vite';
 
 (async () => {
   try {
@@ -9,7 +9,7 @@ import { build, createServer, preview } from 'vite';
       PROD: true,
     });
     console.log('Preview server is running...');
-    console.log('Listening on http://localhost:4173\n');
+    console.log('Listening on https://localhost:4173\n');
 
     const watcher = await build({
       build: {
