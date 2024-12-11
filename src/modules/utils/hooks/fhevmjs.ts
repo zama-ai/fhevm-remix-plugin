@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { createInstance, FhevmInstance } from 'fhevmjs';
+import { getAddress } from 'ethers';
 
 export const LOCALSTORAGE_GATEWAY = 'gatewayUrl';
 export const LOCALSTORAGE_KMS_VERIFIER_ADDRESS = 'kmsVerifierAddress';
@@ -41,8 +42,8 @@ export const useFhevmjs = () => {
       const i = await createInstance({
         network: window.ethereum,
         gatewayUrl: gatewayUrl,
-        kmsContractAddress: kmsVerifierAddress,
-        aclContractAddress: aclAddress,
+        kmsContractAddress: getAddress(kmsVerifierAddress),
+        aclContractAddress: getAddress(aclAddress)
       });
       if (i.getPublicKey()) {
         instance = i;
