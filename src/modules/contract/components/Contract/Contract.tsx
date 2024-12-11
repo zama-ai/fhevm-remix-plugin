@@ -20,6 +20,7 @@ import { ContractInterface } from '../ContractInterface';
 import './Contract.css';
 
 import networks from '../../../../../config/networks.json';
+import { Divider } from '../../../common-ui/components/Divider';
 
 export type ContractItem = {
   address: string;
@@ -27,7 +28,7 @@ export type ContractItem = {
   name: string;
 };
 
-export const Contract = ({}) => {
+export const Contract = ({ }) => {
   const { account, provider } = useWeb3();
   const { remixClient, info, log, error } = useRemix();
   const [name, setName] = useState<string>();
@@ -45,7 +46,7 @@ export const Contract = ({}) => {
     options[0] ? options[0].label : 'custom',
   );
 
-  const [networkFieldsDisabled, setNetworkFieldsDisabled] =
+  const [networkFieldsHidden, setNetworkFieldsHidden] =
     useState<boolean>(true);
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
@@ -121,8 +122,8 @@ export const Contract = ({}) => {
       setGateway(selectedOption.addresses.gatewayUrl);
       setKMSVerifierAddress(selectedOption.addresses.kmsVerifierAddress);
       setACLAddress(selectedOption.addresses.aclAddress);
-      setNetworkFieldsDisabled(true);
-    } else setNetworkFieldsDisabled(false);
+      setNetworkFieldsHidden(true);
+    } else setNetworkFieldsHidden(false);
   }, [networkMode]);
 
   const onDeploy = async () => {
@@ -239,7 +240,7 @@ export const Contract = ({}) => {
                       { address: checksumAddress, abi: copiedAbi, name: name },
                     ]);
                   }
-                } catch (e) {}
+                } catch (e) { }
               }}
             >
               At address
@@ -300,35 +301,35 @@ export const Contract = ({}) => {
         selected={networkMode}
       />
       <div>
-        <Label className="mt-2" label="Gateway" />
-        <TextInput
-          disabled={networkFieldsDisabled}
-          placeholder="Gateway URL"
-          value={gatewayURL}
-          onChange={(e) => {
-            setGateway(e.target.value);
-          }}
-        />
-        <Label className="mt-2" label="KMSVerifier" />
-        <TextInput
-          disabled={networkFieldsDisabled}
-          placeholder="KMSVerifier contract address"
-          value={kmsVerifierAddress}
-          onChange={(e) => {
-            setKMSVerifierAddress(e.target.value);
-          }}
-        />
-        <Label className="mt-2" label="ACL" />
-        <TextInput
-          disabled={networkFieldsDisabled}
-          placeholder="ACL contract address"
-          value={aclAddress}
-          onChange={(e) => {
-            setACLAddress(e.target.value);
-          }}
-        />
+        {!networkFieldsHidden && <div>
+          <Label className="mt-2" label="Gateway" />
+          <TextInput
+            placeholder="Gateway URL"
+            value={gatewayURL}
+            onChange={(e) => {
+              setGateway(e.target.value);
+            }}
+          />
+          <Label className="mt-2" label="KMSVerifier" />
+          <TextInput
+            placeholder="KMSVerifier contract address"
+            value={kmsVerifierAddress}
+            onChange={(e) => {
+              setKMSVerifierAddress(e.target.value);
+            }}
+          />
+          <Label className="mt-2" label="ACL" />
+          <TextInput
+            placeholder="ACL contract address"
+            value={aclAddress}
+            onChange={(e) => {
+              setACLAddress(e.target.value);
+            }}
+          />
+        </div>}
         <div className="mt-2 mb-2">
           <Button onClick={refreshInstance}>Use this configuration</Button>
+          <Divider />
         </div>
       </div>
       {contractSection}

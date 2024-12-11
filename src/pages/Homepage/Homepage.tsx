@@ -16,7 +16,7 @@ export const Homepage = () => {
           <li>Keep "Iframe" and "Side panel" and validate</li>
         </ol>
         <p className="center" dir="auto">
-          <a href="https://www.github.com/zama-ai/fhevm/blob/main/fhevm-whitepaper.pdf"> 📃 Read white paper</a> |{' '}
+          <a href="https://github.com/zama-ai/fhevm/blob/main/fhevm-whitepaper-v2.pdf"> 📃 Read the whitepaper</a> |{' '}
           <a href="https://docs.zama.ai/fhevm" rel="nofollow">
             📒 Documentation
           </a>{' '}
