@@ -43,7 +43,7 @@ export const useFhevmjs = () => {
         network: window.ethereum,
         gatewayUrl: gatewayUrl,
         kmsContractAddress: getAddress(kmsVerifierAddress),
-        aclContractAddress: getAddress(aclAddress)
+        aclContractAddress: getAddress(aclAddress),
       });
       if (i.getPublicKey()) {
         instance = i;
@@ -169,11 +169,7 @@ export const useFhevmjs = () => {
       const keypair = instance.generateKeypair();
       privateKey = keypair.privateKey;
       publicKey = keypair.publicKey;
-      const eip712 = instance.createEIP712(
-        publicKey,
-        contractAddress,
-        userAddress,
-      );
+      const eip712 = instance.createEIP712(publicKey, contractAddress);
       // Request the user's signature on the public key
       const params = [userAddress, JSON.stringify(eip712)];
       signature = await window.ethereum.request({
