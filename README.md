@@ -21,6 +21,11 @@ The fhEVM Remix Plugin is a powerful tool designed to enhance the functionality 
 - **Parameter Encryption**: Encrypt parameters for secure smart contract interactions.
 - **Decryption Gateway**: Use a gateway to decrypt values efficiently.
 
+## Prerequisites
+
+- Recent LTS version of Node.js (for example Node 18 or later) for running local tooling.
+- Basic familiarity with the FHEVM Solidity guides from the Zama Protocol documentation.
+
 ## Installation
 
 To install the fhEVM Remix Plugin, follow these steps:
