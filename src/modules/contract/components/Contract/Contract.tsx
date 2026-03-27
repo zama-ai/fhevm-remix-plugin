@@ -28,7 +28,7 @@ export type ContractItem = {
   name: string;
 };
 
-export const Contract = ({ }) => {
+export const Contract = ({}) => {
   const { account, provider } = useWeb3();
   const { remixClient, info, log, error } = useRemix();
   const [name, setName] = useState<string>();
@@ -40,14 +40,14 @@ export const Contract = ({ }) => {
 
   // @dev For now, options are hardcoded.
   // chainId = 11155111 --> Sepolia
-  const options = networks['11155111'];
+  const sepoliaChainId = '11155111';
+  const options = networks[sepoliaChainId];
 
   const [networkMode, setNetworkMode] = useState<string>(
     options[0] ? options[0].label : 'custom',
   );
 
-  const [networkFieldsHidden, setNetworkFieldsHidden] =
-    useState<boolean>(true);
+  const [networkFieldsHidden, setNetworkFieldsHidden] = useState<boolean>(true);
 
   const [inputContractAddress, setInputContractAddress] = useState<string>('');
 
@@ -165,6 +165,15 @@ export const Contract = ({ }) => {
   };
 
   const refreshInstance = async () => {
+    if (provider !== undefined) {
+      if ((await provider.getNetwork()).chainId !== BigInt(sepoliaChainId)) {
+        await window.ethereum.request({
+          method: 'wallet_switchEthereumChain',
+          params: [{ chainId: '0x' + Number(sepoliaChainId).toString(16) }], // chainId must be in hexadecimal numbers
+        });
+      }
+    }
+
     if (isAddress(aclAddress)) {
       updateACLAddress(aclAddress);
       info('ACL is a valid address.');
@@ -240,7 +249,7 @@ export const Contract = ({ }) => {
                       { address: checksumAddress, abi: copiedAbi, name: name },
                     ]);
                   }
-                } catch (e) { }
+                } catch (e) {}
               }}
             >
               At address
@@ -301,32 +310,34 @@ export const Contract = ({ }) => {
         selected={networkMode}
       />
       <div>
-        {!networkFieldsHidden && <div>
-          <Label className="mt-2" label="Gateway" />
-          <TextInput
-            placeholder="Gateway URL"
-            value={gatewayURL}
-            onChange={(e) => {
-              setGateway(e.target.value);
-            }}
-          />
-          <Label className="mt-2" label="KMSVerifier" />
-          <TextInput
-            placeholder="KMSVerifier contract address"
-            value={kmsVerifierAddress}
-            onChange={(e) => {
-              setKMSVerifierAddress(e.target.value);
-            }}
-          />
-          <Label className="mt-2" label="ACL" />
-          <TextInput
-            placeholder="ACL contract address"
-            value={aclAddress}
-            onChange={(e) => {
-              setACLAddress(e.target.value);
-            }}
-          />
-        </div>}
+        {!networkFieldsHidden && (
+          <div>
+            <Label className="mt-2" label="Gateway" />
+            <TextInput
+              placeholder="Gateway URL"
+              value={gatewayURL}
+              onChange={(e) => {
+                setGateway(e.target.value);
+              }}
+            />
+            <Label className="mt-2" label="KMSVerifier" />
+            <TextInput
+              placeholder="KMSVerifier contract address"
+              value={kmsVerifierAddress}
+              onChange={(e) => {
+                setKMSVerifierAddress(e.target.value);
+              }}
+            />
+            <Label className="mt-2" label="ACL" />
+            <TextInput
+              placeholder="ACL contract address"
+              value={aclAddress}
+              onChange={(e) => {
+                setACLAddress(e.target.value);
+              }}
+            />
+          </div>
+        )}
         <div className="mt-2 mb-2">
           <Button onClick={refreshInstance}>Use this configuration</Button>
           <Divider />
